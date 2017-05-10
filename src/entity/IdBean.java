@@ -100,7 +100,7 @@ public class IdBean extends JPanel {
     private void initComponent(boolean enable, boolean clickable, boolean clickEnable) {
         /*
         // 是否生成 + name
-        JCheckBox enableCheckBox = new JCheckBox(mElement.getName(), true);
+        JCheckBox enableCheckBox = new JCheckBox(mElement.getViewName(), true);
         // 监听
         enableCheckBox.addActionListener(e -> mElement.setEnable(enableCheckBox.isSelected()));
         // 设置左对齐

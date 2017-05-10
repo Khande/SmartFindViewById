@@ -110,10 +110,10 @@ public class WidgetFieldCreator extends Simple {
                 continue;
             }
             // 设置变量名，获取text里面的内容
-            String text = element.getXml().getAttributeValue("android:text");
+            String text = element.getXmlTag().getAttributeValue("android:text");
             if (TextUtils.isEmpty(text)) {
                 // 如果是text为空，则获取hint里面的内容
-                text = element.getXml().getAttributeValue("android:hint");
+                text = element.getXmlTag().getAttributeValue("android:hint");
             }
             // 如果是@string/app_name类似
             if (!TextUtils.isEmpty(text) && text.contains("@string/")) {
@@ -136,7 +136,7 @@ public class WidgetFieldCreator extends Simple {
                  fromText.append("/** " + text + " */\n");
             }
             fromText.append("private ");
-            fromText.append(element.getName());
+            fromText.append(element.getViewName());
             fromText.append(" ");
             fromText.append(element.getFieldName());
             if (mIsLayoutInflater) fromText.append(mLayoutInflaterText.substring(1));
@@ -266,8 +266,8 @@ public class WidgetFieldCreator extends Simple {
                         pre = mLayoutInflaterText + ".";
                     }
                     String findViewById = element.getFieldName() + inflater
-                            + " = (" + element.getName() + ") "
-                            + pre + "findViewById(" + element.getFullID() + ");";
+                            + " = (" + element.getViewName() + ") "
+                            + pre + "findViewById(" + element.getFullId() + ");";
                     for (PsiStatement statement : statements) {
                         if (statement.getText().equals(findViewById)) {
                             isFdExist = true;
@@ -322,8 +322,8 @@ public class WidgetFieldCreator extends Simple {
                         pre = mLayoutInflaterText + ".";
                     }
                     initView.append(element.getFieldName() + inflater
-                            + " = (" + element.getName() + ")"
-                            + pre + "findViewById(" + element.getFullID() + ");\n");
+                            + " = (" + element.getViewName() + ")"
+                            + pre + "findViewById(" + element.getFullId() + ");\n");
                     if (element.isClickable() && element.isClickEnable()) {
                         initView.append(element.getFieldName() + inflater + ".setOnClickListener(this);\n");
                     }
@@ -369,7 +369,7 @@ public class WidgetFieldCreator extends Simple {
                     PsiCodeBlock psiSwitchStatementBody = psiSwitchStatement.getBody();
                     if(psiSwitchStatementBody != null) {
                         for (Element element : mOnClickList) {
-                            String cass = "case " + element.getFullID() + ":";
+                            String cass = "case " + element.getFullId() + ":";
                             // 判断是否存在
                             boolean isExist = false;
                             for (PsiStatement statement : psiSwitchStatementBody.getStatements()) {
@@ -396,7 +396,7 @@ public class WidgetFieldCreator extends Simple {
                 onClick.append("switch (v.getId()) {\n");
                 for (Element mElement : mOnClickList) {
                     if (mElement.isClickable()) {
-                        onClick.append("case " + mElement.getFullID() + ":\nbreak;\n");
+                        onClick.append("case " + mElement.getFullId() + ":\nbreak;\n");
                     }
                 }
                 onClick.append("}\n");

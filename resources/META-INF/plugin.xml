@@ -1,6 +1,6 @@
-<idea-plugin version="2">
+<idea-plugin>
     <id>com.wangzai.plugin.findViewById</id>
-    <name>GenerateFindViewById</name>
+    <viewName>GenerateFindViewById</viewName>
     <version>1.0</version>
     <vendor email="673173629@qq.com" url="https://github.com/wangzailfm/GenerateFindViewById">GitHub</vendor>
 

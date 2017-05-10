@@ -10,15 +10,15 @@ import java.util.regex.Pattern;
 public class Element {
 
     // 判断id正则
-    private static final Pattern sIdPattern = Pattern.compile("@\\+?(android:)?id/([^$]+)$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern VIEW_ID_PATTERN = Pattern.compile("@\\+?(android:)?id/([^$]+)$", Pattern.CASE_INSENSITIVE);
     // id
     private String id;
-    // 名字如TextView
-    private String name;
-    // 命名1 aa_bb_cc; 2 aaBbCc 3 mAaBbCc
+    // View 的类名如 TextView
+    private String viewName;
+    // 命名 1 aa_bb_cc; 2 aaBbCc 3 mBbCcAa
     private int fieldNameType = 3;
     private String fieldName;
-    private XmlTag xml;
+    private XmlTag xmlTag;
     // 是否生成
     private boolean isEnable = true;
     // 是否有clickable
@@ -29,14 +29,15 @@ public class Element {
     /**
      * 构造函数
      *
-     * @param name View的名字
-     * @param id   android:id属性
+     * @param viewNameTag View 控件根布局名称，系统常用控件没有包名，只有类名如 "TextView",
+     *                  其他 support 包新控件或自定义控件包括包名和类名, 如 "com.example.CustomView"
+     * @param id   android:id 属性字符串
      * @param clickable clickable
      * @throws IllegalArgumentException When the arguments are invalid
      */
-    public Element(String name, String id, boolean clickable, XmlTag xml) {
+    public Element(String viewNameTag, String id, boolean clickable, XmlTag xml) {
         // id
-        final Matcher matcher = sIdPattern.matcher(id);
+        final Matcher matcher = VIEW_ID_PATTERN.matcher(id);
         if (matcher.find() && matcher.groupCount() > 1) {
             this.id = matcher.group(2);
         }
@@ -45,19 +46,19 @@ public class Element {
             throw new IllegalArgumentException("Invalid format of view id");
         }
 
-        String[] packages = name.split("\\.");
+        String[] packages = viewNameTag.split("\\.");
         if (packages.length > 1) {
             // com.example.CustomView
-            this.name = packages[packages.length - 1];
+            this.viewName = packages[packages.length - 1];
         } else {
-            this.name = name;
+            this.viewName = viewNameTag;
         }
 
         this.clickEnable = clickable;
 
         this.clickable = clickable;
 
-        this.xml = xml;
+        this.xmlTag = xml;
     }
 
     public String getId() {
@@ -68,12 +69,12 @@ public class Element {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getViewName() {
+        return viewName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setViewName(String viewName) {
+        this.viewName = viewName;
     }
 
     public int getFieldNameType() {
@@ -84,12 +85,12 @@ public class Element {
         this.fieldNameType = fieldNameType;
     }
 
-    public XmlTag getXml() {
-        return xml;
+    public XmlTag getXmlTag() {
+        return xmlTag;
     }
 
-    public void setXml(XmlTag xml) {
-        this.xml = xml;
+    public void setXmlTag(XmlTag xmlTag) {
+        this.xmlTag = xmlTag;
     }
 
     public boolean isEnable() {
@@ -121,12 +122,8 @@ public class Element {
      *
      * @return
      */
-    public String getFullID() {
-        StringBuilder fullID = new StringBuilder();
-        String rPrefix = "R.id.";
-        fullID.append(rPrefix);
-        fullID.append(id);
-        return fullID.toString();
+    public String getFullId() {
+        return "R.id." + id;
     }
 
     /**
@@ -136,7 +133,7 @@ public class Element {
      */
     public String getFieldName() {
         if (TextUtils.isEmpty(this.fieldName)) {
-            String fieldName = id;
+            String customFieldName = id;
             String[] names = id.split("_");
             if (fieldNameType == 2) {
                 // aaBbCc
@@ -148,19 +145,18 @@ public class Element {
                         sb.append(Util.firstToUpperCase(names[i]));
                     }
                 }
-                fieldName = sb.toString();
+                customFieldName = sb.toString();
             } else if (fieldNameType == 3) {
-                // mAaBbCc
+                // mBbCcAa
                 StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < names.length; i++) {
-                    if (i == 0) {
-                        sb.append("m");
-                    }
+                sb.append("m");
+                for (int i = 1; i < names.length; i++) {
                     sb.append(Util.firstToUpperCase(names[i]));
                 }
-                fieldName = sb.toString();
+                sb.append(Util.firstToUpperCase(names[0]));
+                customFieldName = sb.toString();
             }
-            this.fieldName = fieldName;
+            this.fieldName = customFieldName;
         }
         return this.fieldName;
     }

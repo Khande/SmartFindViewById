@@ -100,7 +100,7 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
             if (statements != null) {
                 for (PsiStatement statement : statements) {
                     if (statement.getText().contains(mElement.getFieldName())
-                            && statement.getText().contains("findViewById(" + mElement.getFullID() + ");")) {
+                            && statement.getText().contains("findViewById(" + mElement.getFullId() + ");")) {
                         isFdExist = true;
                         break;
                     } else {
@@ -118,7 +118,7 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
                 }
             }
             if (onClickStatement != null) {
-                String cass = "case " + mElement.getFullID() + ":";
+                String cass = "case " + mElement.getFullId() + ":";
                 for (PsiElement psiElement : onClickStatement) {
                     if (psiElement instanceof PsiSwitchStatement) {
                         PsiSwitchStatement psiSwitchStatement = (PsiSwitchStatement) psiElement;
@@ -211,7 +211,7 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
             Element mElement = mElements.get(i);
             IdBean itemJPanel = new IdBean(new GridLayout(1, 4, 10, 10),
                     new EmptyBorder(5, 10, 5, 10),
-                    new JCheckBox(mElement.getName()),
+                    new JCheckBox(mElement.getViewName()),
                     new JLabel(mElement.getId()),
                     new JCheckBox(),
                     new JTextField(mElement.getFieldName()),
