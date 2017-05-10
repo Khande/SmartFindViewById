@@ -1,41 +1,51 @@
 package entity;
 
-import Utils.Util;
 import com.intellij.psi.xml.XmlTag;
 import org.apache.http.util.TextUtils;
+import org.jetbrains.annotations.NotNull;
+import utils.StringUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Element {
-
+/**
+ * layout xml 文件中 view Widget 元素
+ */
+public class ViewWidgetElement {
     // 判断id正则
     private static final Pattern VIEW_ID_PATTERN = Pattern.compile("@\\+?(android:)?id/([^$]+)$", Pattern.CASE_INSENSITIVE);
-    // id
+
+    // android:id 属性字符串
     private String id;
-    // View 的类名如 TextView
+
+    // view 的类名如 TextView
     private String viewName;
-    // 命名 1 aa_bb_cc; 2 aaBbCc 3 mBbCcAa
-    private int fieldNameType = 3;
+
+    // 生成代码所在 Activity 或 Fragment 成员变量名
     private String fieldName;
+
+
     private XmlTag xmlTag;
+
     // 是否生成
     private boolean isEnable = true;
+
     // 是否有clickable
     private boolean clickEnable = false;
+
     // 是否Clickable
     private boolean clickable = false;
 
     /**
      * 构造函数
      *
-     * @param viewNameTag View 控件根布局名称，系统常用控件没有包名，只有类名如 "TextView",
-     *                  其他 support 包新控件或自定义控件包括包名和类名, 如 "com.example.CustomView"
-     * @param id   android:id 属性字符串
-     * @param clickable clickable
+     * @param viewNameTag view 控件根布局名称，系统常用控件没有包名，只有类名如 "TextView",
+     *                    其他 support 包新控件或自定义控件包括包名和类名, 如 "com.example.CustomView"
+     * @param id          android:id 属性字符串
+     * @param clickable   clickable
      * @throws IllegalArgumentException When the arguments are invalid
      */
-    public Element(String viewNameTag, String id, boolean clickable, XmlTag xml) {
+    public ViewWidgetElement(@NotNull String viewNameTag, String id, boolean clickable, XmlTag xml) {
         // id
         final Matcher matcher = VIEW_ID_PATTERN.matcher(id);
         if (matcher.find() && matcher.groupCount() > 1) {
@@ -46,19 +56,25 @@ public class Element {
             throw new IllegalArgumentException("Invalid format of view id");
         }
 
-        String[] packages = viewNameTag.split("\\.");
-        if (packages.length > 1) {
-            // com.example.CustomView
-            this.viewName = packages[packages.length - 1];
-        } else {
-            this.viewName = viewNameTag;
-        }
+        this.viewName = extractViewName(viewNameTag);
 
         this.clickEnable = clickable;
 
         this.clickable = clickable;
 
         this.xmlTag = xml;
+    }
+
+    private String extractViewName(@NotNull String viewNameTag) {
+        String[] packages = viewNameTag.split("\\.");
+        String viewName;
+        if (packages.length > 1) {
+            // com.example.CustomView
+            viewName = packages[packages.length - 1];
+        } else {
+            viewName = viewNameTag;
+        }
+        return viewName;
     }
 
     public String getId() {
@@ -75,14 +91,6 @@ public class Element {
 
     public void setViewName(String viewName) {
         this.viewName = viewName;
-    }
-
-    public int getFieldNameType() {
-        return fieldNameType;
-    }
-
-    public void setFieldNameType(int fieldNameType) {
-        this.fieldNameType = fieldNameType;
     }
 
     public XmlTag getXmlTag() {
@@ -118,50 +126,35 @@ public class Element {
     }
 
     /**
-     * 获取id，R.id.id
+     * 获取 view 的完整 id
      *
-     * @return
+     * @return 形如 R.id.aa_bb_cc 的 android:id 字符串
      */
-    public String getFullId() {
+    public String getFullViewId() {
         return "R.id." + id;
     }
 
     /**
-     * 获取变量名
+     * 生成该 view id 对应的 view 代码所在 Activity 或 Fragment 成员变量名
+     * 此处规范为 R.id.aa_bb_cc --> mBbCcAa, 一般 aa 为 view 缩写，如 TextView 缩写为 tv.
      *
-     * @return
+     * @return view 所对应的成员变量名字符串
      */
     public String getFieldName() {
         if (TextUtils.isEmpty(this.fieldName)) {
-            String customFieldName = id;
             String[] names = id.split("_");
-            if (fieldNameType == 2) {
-                // aaBbCc
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < names.length; i++) {
-                    if (i == 0) {
-                        sb.append(names[i]);
-                    } else {
-                        sb.append(Util.firstToUpperCase(names[i]));
-                    }
-                }
-                customFieldName = sb.toString();
-            } else if (fieldNameType == 3) {
-                // mBbCcAa
-                StringBuilder sb = new StringBuilder();
-                sb.append("m");
-                for (int i = 1; i < names.length; i++) {
-                    sb.append(Util.firstToUpperCase(names[i]));
-                }
-                sb.append(Util.firstToUpperCase(names[0]));
-                customFieldName = sb.toString();
+            StringBuilder sb = new StringBuilder();
+            sb.append("m");
+            for (int i = 1; i < names.length; i++) {
+                sb.append(StringUtils.capitalize(names[i]));
             }
-            this.fieldName = customFieldName;
+            sb.append(StringUtils.capitalize(names[0]));
+            this.fieldName = sb.toString();
         }
         return this.fieldName;
     }
 
     public void setFieldName(String fieldName) {
-       this.fieldName = fieldName;
+        this.fieldName = fieldName;
     }
 }

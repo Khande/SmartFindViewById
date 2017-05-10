@@ -1,6 +1,6 @@
-package Utils;
+package utils;
 
-import View.FindViewByIdDialog;
+import view.FindViewByIdDialog;
 import com.intellij.codeInsight.actions.ReformatCodeProcessor;
 import com.intellij.openapi.command.WriteCommandAction.Simple;
 import com.intellij.openapi.editor.Editor;
@@ -9,7 +9,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
-import entity.Element;
+import entity.ViewWidgetElement;
 import org.apache.http.util.TextUtils;
 
 import java.util.ArrayList;
@@ -22,27 +22,27 @@ public class WidgetFieldCreator extends Simple {
     private PsiFile mFile;
     private Project mProject;
     private PsiClass mClass;
-    private List<Element> mElements;
+    private List<ViewWidgetElement> mViewWidgetElements;
     private PsiElementFactory mFactory;
     private String mSelectedText;
     private boolean mIsLayoutInflater;
     private String mLayoutInflaterText;
-    private List<Element> mOnClickList = new ArrayList<>();
+    private List<ViewWidgetElement> mOnClickList = new ArrayList<>();
 
-    public WidgetFieldCreator(FindViewByIdDialog dialog, Editor editor, PsiFile psiFile, PsiClass psiClass, String command, List<Element> elements, String selectedText, boolean isLayoutInflater, String text) {
+    public WidgetFieldCreator(FindViewByIdDialog dialog, Editor editor, PsiFile psiFile, PsiClass psiClass, String command, List<ViewWidgetElement> viewWidgetElements, String selectedText, boolean isLayoutInflater, String text) {
         super(psiClass.getProject(), command);
         mDialog = dialog;
         mEditor = editor;
         mFile = psiFile;
         mProject = psiClass.getProject();
         mClass = psiClass;
-        mElements = elements;
+        mViewWidgetElements = viewWidgetElements;
         // 获取Factory
         mFactory = JavaPsiFacade.getElementFactory(mProject);
         mSelectedText = selectedText;
         mIsLayoutInflater = isLayoutInflater;
         mLayoutInflaterText = text;
-        for (Element mElement : mElements) {
+        for (ViewWidgetElement mElement : mViewWidgetElements) {
             if (mElement.isEnable() && mElement.isClickEnable() && mElement.isClickable()) {
                 mOnClickList.add(mElement);
             }
@@ -72,7 +72,7 @@ public class WidgetFieldCreator extends Simple {
      */
     private void generateFields() {
         if (mIsLayoutInflater) {
-            String inflater = "private " + "View " + mLayoutInflaterText + ";";
+            String inflater = "private " + "view " + mLayoutInflaterText + ";";
             // 已存在的变量就不创建
             boolean duplicateField = false;
             for (PsiField field : mClass.getFields()) {
@@ -86,7 +86,7 @@ public class WidgetFieldCreator extends Simple {
                 mClass.add(mFactory.createFieldFromText(inflater, mClass));
             }
         }
-        for (Element element : mElements) {
+        for (ViewWidgetElement element : mViewWidgetElements) {
             // 已存在的变量就不创建
             PsiField[] fields = mClass.getFields();
             boolean duplicateField = false;
@@ -255,7 +255,7 @@ public class WidgetFieldCreator extends Simple {
                     initViewMethodBody.add(mFactory.createStatementFromText(layoutInflater, initViewMethods[0]));
                 }
             }
-            for (Element element : mElements) {
+            for (ViewWidgetElement element : mViewWidgetElements) {
                 if (element.isEnable()) {
                     // 判断是否已存在findViewById
                     boolean isFdExist = false;
@@ -267,7 +267,7 @@ public class WidgetFieldCreator extends Simple {
                     }
                     String findViewById = element.getFieldName() + inflater
                             + " = (" + element.getViewName() + ") "
-                            + pre + "findViewById(" + element.getFullId() + ");";
+                            + pre + "findViewById(" + element.getFullViewId() + ");";
                     for (PsiStatement statement : statements) {
                         if (statement.getText().equals(findViewById)) {
                             isFdExist = true;
@@ -303,7 +303,7 @@ public class WidgetFieldCreator extends Simple {
             if (TextUtils.isEmpty(findPre)) {
                 initView.append("private void initView() {\n");
             } else {
-                initView.append("private void initView(View " + findPre + ") {\n");
+                initView.append("private void initView(view " + findPre + ") {\n");
             }
             if (mIsLayoutInflater) {
                 // 添加LayoutInflater.from(this).inflate(R.layout.activity_main, null);
@@ -313,7 +313,7 @@ public class WidgetFieldCreator extends Simple {
                 initView.append(layoutInflater);
             }
 
-            for (Element element : mElements) {
+            for (ViewWidgetElement element : mViewWidgetElements) {
                 if (element.isEnable()) {
                     String pre = TextUtils.isEmpty(findPre) ? "" : findPre + ".";
                     String inflater = "";
@@ -323,7 +323,7 @@ public class WidgetFieldCreator extends Simple {
                     }
                     initView.append(element.getFieldName() + inflater
                             + " = (" + element.getViewName() + ")"
-                            + pre + "findViewById(" + element.getFullId() + ");\n");
+                            + pre + "findViewById(" + element.getFullViewId() + ");\n");
                     if (element.isClickable() && element.isClickEnable()) {
                         initView.append(element.getFieldName() + inflater + ".setOnClickListener(this);\n");
                     }
@@ -352,7 +352,7 @@ public class WidgetFieldCreator extends Simple {
         }
         // 未实现添加OnClickListener接口
         if (!isImplOnClick) {
-            PsiJavaCodeReferenceElement referenceElementByFQClassName = mFactory.createReferenceElementByFQClassName("android.view.View.OnClickListener", mClass.getResolveScope());
+            PsiJavaCodeReferenceElement referenceElementByFQClassName = mFactory.createReferenceElementByFQClassName("android.view.view.OnClickListener", mClass.getResolveScope());
             // 添加的PsiReferenceList
             implementsList.add(referenceElementByFQClassName);
         }
@@ -368,8 +368,8 @@ public class WidgetFieldCreator extends Simple {
                     // 获取switch的内容
                     PsiCodeBlock psiSwitchStatementBody = psiSwitchStatement.getBody();
                     if(psiSwitchStatementBody != null) {
-                        for (Element element : mOnClickList) {
-                            String cass = "case " + element.getFullId() + ":";
+                        for (ViewWidgetElement element : mOnClickList) {
+                            String cass = "case " + element.getFullViewId() + ":";
                             // 判断是否存在
                             boolean isExist = false;
                             for (PsiStatement statement : psiSwitchStatementBody.getStatements()) {
@@ -392,11 +392,11 @@ public class WidgetFieldCreator extends Simple {
         } else {
             if (mOnClickList.size() != 0) {
                 StringBuilder onClick = new StringBuilder();
-                onClick.append("@Override public void onClick(View v) {\n");
+                onClick.append("@Override public void onClick(view v) {\n");
                 onClick.append("switch (v.getId()) {\n");
-                for (Element mElement : mOnClickList) {
+                for (ViewWidgetElement mElement : mOnClickList) {
                     if (mElement.isClickable()) {
-                        onClick.append("case " + mElement.getFullId() + ":\nbreak;\n");
+                        onClick.append("case " + mElement.getFullViewId() + ":\nbreak;\n");
                     }
                 }
                 onClick.append("}\n");

@@ -1,4 +1,4 @@
-package Utils;
+package utils;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
@@ -14,7 +14,7 @@ import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.JBColor;
-import entity.Element;
+import entity.ViewWidgetElement;
 import org.apache.http.util.TextUtils;
 
 import java.awt.*;
@@ -108,78 +108,6 @@ public class Util {
         return StringValue;
     }
 
-    /**
-     * 获取所有id
-     *
-     * @param file
-     * @param elements
-     * @return
-     */
-    public static java.util.List<Element> getIDsFromLayout(final PsiFile file, final java.util.List<Element> elements) {
-        // To iterate over the elements in a file
-        // 遍历一个文件的所有元素
-        file.accept(new XmlRecursiveElementVisitor() {
-
-            @Override
-            public void visitElement(PsiElement element) {
-                super.visitElement(element);
-                // 解析Xml标签
-                if (element instanceof XmlTag) {
-                    XmlTag tag = (XmlTag) element;
-                    // 获取Tag的名字（TextView）或者自定义
-                    String name = tag.getName();
-                    // 如果有include
-                    if (name.equalsIgnoreCase("include")) {
-                        // 获取布局
-                        XmlAttribute layout = tag.getAttribute("layout", null);
-                        // 获取project
-                        Project project = file.getProject();
-                        // 布局文件
-                        XmlFile include = null;
-                        PsiFile[] psiFiles = FilenameIndex.getFilesByName(project, getLayoutName(layout.getValue()) + ".xml", GlobalSearchScope.allScope(project));
-                        if (psiFiles.length > 0) {
-                            include = (XmlFile) psiFiles[0];
-                        }
-                        if (include != null) {
-                            // 递归
-                            getIDsFromLayout(include, elements);
-                            return;
-                        }
-                    }
-                    // 获取id字段属性
-                    XmlAttribute id = tag.getAttribute("android:id", null);
-                    if (id == null) {
-                        return;
-                    }
-                    // 获取id的值
-                    String idValue = id.getValue();
-                    if (idValue == null) {
-                        return;
-                    }
-                    XmlAttribute aClass = tag.getAttribute("class", null);
-                    if (aClass != null) {
-                        name = aClass.getValue();
-                    }
-                    // 获取clickable
-                    XmlAttribute clickableAttr = tag.getAttribute("android:clickable", null);
-                    boolean clickable = false;
-                    if (clickableAttr != null && !TextUtils.isEmpty(clickableAttr.getValue())) {
-                        clickable = clickableAttr.getValue().equals("true");
-                    }
-                    // 添加到list
-                    try {
-                        Element e = new Element(name, idValue, clickable, tag);
-                        elements.add(e);
-                    } catch (IllegalArgumentException e) {
-
-                    }
-                }
-            }
-        });
-
-
-        return elements;
-    }
 
     /**
      * layout.getValue()返回的值为@layout/layout_view
@@ -277,9 +205,9 @@ public class Util {
      */
     public static String createOnCreateViewMethod(String mSelectedText) {
         StringBuilder method = new StringBuilder();
-        method.append("@Override public View onCreateView(android.view.LayoutInflater inflater, android.view.ViewGroup container, android.os.Bundle savedInstanceState) {\n");
+        method.append("@Override public view onCreateView(android.view.LayoutInflater inflater, android.view.ViewGroup container, android.os.Bundle savedInstanceState) {\n");
         method.append("\t// TODO:OnCreateView Method has been created, run FindViewById again to generate code\n");
-        method.append("\tView view = View.inflate(getActivity(), R.layout.");
+        method.append("\tview view = view.inflate(getActivity(), R.layout.");
         method.append(mSelectedText);
         method.append(", null);");
         method.append("return view;");

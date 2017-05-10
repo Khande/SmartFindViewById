@@ -1,8 +1,5 @@
 package action;
 
-import Utils.CreateMethodCreator;
-import Utils.Util;
-import View.FindViewByIdDialog;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -12,12 +9,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.search.FilenameIndex;
-import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiUtilBase;
 import com.intellij.psi.xml.XmlFile;
-import entity.Element;
+import entity.ViewWidgetElement;
 import org.apache.http.util.TextUtils;
+import utils.AndroidUtils;
+import utils.CreateMethodCreator;
+import utils.Util;
+import view.FindViewByIdDialog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,25 +40,24 @@ public class FindViewByIdAction extends AnAction {
         String selectedText = model.getSelectedText();
         // 未选中布局文件名，显示dialog
         if (TextUtils.isEmpty(selectedText)) {
-            String inputText = Messages.showInputDialog(project, "layout 文件名：（不需要输入 R.layout. 及文件后缀 .xml）",
+            selectedText= Messages.showInputDialog(project, "layout 文件名：（不需要输入 R.layout. 及文件后缀 .xml）",
                     "未选中 layout 文件名，请输入layout 文件名", Messages.getInformationIcon());
-            if (TextUtils.isEmpty(inputText)) {
+            if (TextUtils.isEmpty(selectedText)) {
                 Util.showPopupBalloon(editor, "未输入 layout 文件名", 5);
                 return;
             }
         }
         // 获取布局文件，通过FilenameIndex.getFilesByName获取
         // GlobalSearchScope.allScope(project)搜索整个项目
-        PsiFile[] psiFiles = FilenameIndex.getFilesByName(project, selectedText + ".xml", GlobalSearchScope.allScope(project));
-        if (psiFiles.length <= 0) {
+        XmlFile xmlFile = AndroidUtils.getXmlFileByName(project, selectedText);
+        if (xmlFile == null) {
             Util.showPopupBalloon(editor, "未找到选中的布局文件", 5);
             return;
         }
-        XmlFile xmlFile = (XmlFile) psiFiles[0];
-        List<Element> elements = new ArrayList<>();
-        Util.getIDsFromLayout(xmlFile, elements);
+        List<ViewWidgetElement> viewWidgetElements = new ArrayList<>();
+        AndroidUtils.getAllViewIdsFromLayoutFile(xmlFile, viewWidgetElements);
         // 将代码写入文件，不允许在主线程中进行实时的文件写入
-        if (elements.size() != 0) {
+        if (viewWidgetElements.size() != 0) {
             // 判断是否有onCreate/onCreateView方法
             PsiFile psiFile = PsiUtilBase.getPsiFileInEditor(editor, project);
             PsiClass psiClass = Util.getTargetClass(editor, psiFile);
@@ -83,7 +81,7 @@ public class FindViewByIdAction extends AnAction {
             if (mDialog != null && mDialog.isShowing()) {
                 mDialog.cancelDialog();
             }
-            mDialog = new FindViewByIdDialog(editor, project, psiFile, psiClass, elements, selectedText);
+            mDialog = new FindViewByIdDialog(editor, project, psiFile, psiClass, viewWidgetElements, selectedText);
             mDialog.showDialog();
         } else {
             Util.showPopupBalloon(editor, "未找到任何Id", 5);

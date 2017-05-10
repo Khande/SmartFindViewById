@@ -1,12 +1,12 @@
-package View;
+package view;
 
-import Utils.Util;
-import Utils.WidgetFieldCreator;
+import utils.Util;
+import utils.WidgetFieldCreator;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.ui.components.JBScrollPane;
-import entity.Element;
+import entity.ViewWidgetElement;
 import entity.IdBean;
 
 import javax.swing.*;
@@ -20,11 +20,16 @@ import java.util.List;
  * Created by wangzai on 2016/11/24.
  */
 public class FindViewByIdDialog extends JFrame implements ActionListener {
-    private String mTitle = "FindViewByIdDialog";
-    private Project mProject;
+    private static final String DIALOG_TITLE = "FindViewByIdDialog";
+    private static final int DIALOG_WIDTH = 820;
+    private static final int DIALOG_HEIGHT = 405;
+    private static final String CMD_CHECK_ALL = "全选";
+    private static final String CMD_CONFIRM = "确定";
+    private static final String CMD_CANCEL = "取消";
+
     private Editor mEditor;
     private String mSelectedText;
-    private List<Element> mElements;
+    private List<ViewWidgetElement> mViewWidgetElements;
     // 获取当前文件
     private PsiFile mPsiFile;
     // 获取class
@@ -33,11 +38,11 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
     private int mElementSize;
 
     // 标签JPanel
-    private JPanel mPanelTitle = new JPanel();
-    private JLabel mTitleName = new JLabel("ViewWidget");
-    private JLabel mTitleId = new JLabel("ViewId");
-    private JLabel mTitleClick = new JLabel("OnClick");
-    private JLabel mTitleField = new JLabel("ViewFiled");
+    private JPanel mLabelPanel = new JPanel();
+    private JLabel mViewNameLabel = new JLabel("View 类型");
+    private JLabel mViewIdLabel = new JLabel("View Id");
+    private JLabel mOnClickLabel = new JLabel("OnClick");
+    private JLabel mViewFieldNameLabel = new JLabel("目标成员变量名");
 
     // 内容JPanel
     private JPanel mContentJPanel = new JPanel();
@@ -48,31 +53,30 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
 
     // 底部JPanel
     // LayoutInflater JPanel
-    private JPanel mPanelInflater = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    private JPanel mInflaterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
     // 是否选择LayoutInflater
-    private JCheckBox mLayoutInflater = new JCheckBox("LayoutInflater.from(context).inflater", false);
+    private JCheckBox mLayoutInflaterCheckBox = new JCheckBox("LayoutInflater.from(context).inflater", false);
     // 手动修改LayoutInflater字段名
     private JTextField mLayoutInflaterField;
     // 是否全选
-    private JCheckBox mCheckAll = new JCheckBox("CheckAll");
+    private JCheckBox mCheckAll = new JCheckBox(CMD_CHECK_ALL);
     // 确定、取消JPanel
     private JPanel mPanelButtonRight = new JPanel();
-    private JButton mButtonConfirm = new JButton("确定");
-    private JButton mButtonCancel = new JButton("取消");
+    private JButton mButtonConfirm = new JButton(CMD_CONFIRM);
+    private JButton mButtonCancel = new JButton(CMD_CANCEL);
 
     // GridBagLayout不要求组件的大小相同便可以将组件垂直、水平或沿它们的基线对齐
     private GridBagLayout mLayout = new GridBagLayout();
     // GridBagConstraints用来控制添加进的组件的显示位置
     private GridBagConstraints mConstraints = new GridBagConstraints();
 
-    public FindViewByIdDialog(Editor editor, Project project, PsiFile psiFile, PsiClass psiClass, List<Element> elements, String selectedText) {
+    public FindViewByIdDialog(Editor editor, Project project, PsiFile psiFile, PsiClass psiClass, List<ViewWidgetElement> viewWidgetElements, String selectedText) {
         mEditor = editor;
-        mProject = project;
         mSelectedText = selectedText;
-        mElements = elements;
+        mViewWidgetElements = viewWidgetElements;
         mPsiFile = psiFile;
         mClass = psiClass;
-        mElementSize = mElements.size();
+        mElementSize = mViewWidgetElements.size();
         initExist();
         initTopPanel();
         initContentPanel();
@@ -96,11 +100,11 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
         // 获取initView方法的内容
         PsiStatement[] statements = Util.getInitViewBodyStatements(mClass);
         PsiElement[] onClickStatement = Util.getOnClickStatement(mClass);
-        for (Element mElement : mElements) {
+        for (ViewWidgetElement mElement : mViewWidgetElements) {
             if (statements != null) {
                 for (PsiStatement statement : statements) {
                     if (statement.getText().contains(mElement.getFieldName())
-                            && statement.getText().contains("findViewById(" + mElement.getFullId() + ");")) {
+                            && statement.getText().contains("findViewById(" + mElement.getFullViewId() + ");")) {
                         isFdExist = true;
                         break;
                     } else {
@@ -118,7 +122,7 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
                 }
             }
             if (onClickStatement != null) {
-                String cass = "case " + mElement.getFullId() + ":";
+                String cass = "case " + mElement.getFullViewId() + ":";
                 for (PsiElement psiElement : onClickStatement) {
                     if (psiElement instanceof PsiSwitchStatement) {
                         PsiSwitchStatement psiSwitchStatement = (PsiSwitchStatement) psiElement;
@@ -155,7 +159,7 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
                 }
             }
         }
-        mCheckAll.setSelected(mElementSize == mElements.size());
+        mCheckAll.setSelected(mElementSize == mViewWidgetElements.size());
         mCheckAll.addActionListener(this);
     }
 
@@ -163,20 +167,20 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
      * 添加头部
      */
     private void initTopPanel() {
-        mPanelTitle.setLayout(new GridLayout(1, 4, 10, 10));
-        mPanelTitle.setBorder(new EmptyBorder(5, 10, 5, 10));
-        mTitleName.setHorizontalAlignment(JLabel.LEFT);
-        mTitleName.setBorder(new EmptyBorder(0, 25, 0, 0));
-        mTitleId.setHorizontalAlignment(JLabel.LEFT);
-        mTitleClick.setHorizontalAlignment(JLabel.LEFT);
-        mTitleField.setHorizontalAlignment(JLabel.LEFT);
-        mPanelTitle.add(mTitleName);
-        mPanelTitle.add(mTitleId);
-        mPanelTitle.add(mTitleClick);
-        mPanelTitle.add(mTitleField);
-        mPanelTitle.setSize(720, 30);
+        mLabelPanel.setLayout(new GridLayout(1, 4, 10, 10));
+        mLabelPanel.setBorder(new EmptyBorder(5, 10, 5, 10));
+        mViewNameLabel.setHorizontalAlignment(JLabel.LEFT);
+        mViewNameLabel.setBorder(new EmptyBorder(0, 25, 0, 0));
+        mViewIdLabel.setHorizontalAlignment(JLabel.LEFT);
+        mOnClickLabel.setHorizontalAlignment(JLabel.LEFT);
+        mViewFieldNameLabel.setHorizontalAlignment(JLabel.LEFT);
+        mLabelPanel.add(mViewNameLabel);
+        mLabelPanel.add(mViewIdLabel);
+        mLabelPanel.add(mOnClickLabel);
+        mLabelPanel.add(mViewFieldNameLabel);
+        mLabelPanel.setSize(720, 30);
         // 添加到JFrame
-        getContentPane().add(mPanelTitle, 0);
+        getContentPane().add(mLabelPanel, 0);
     }
 
     /**
@@ -187,17 +191,17 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
         mButtonConfirm.addActionListener(this);
         mButtonCancel.addActionListener(this);
         // 左边
-        String viewField = "m" + Util.getFieldName(mSelectedText) + "View";
+        String viewField = "m" + Util.getFieldName(mSelectedText) + "view";
         mLayoutInflaterField = new JTextField(viewField, viewField.length());
         // 右边
         mPanelButtonRight.add(mButtonConfirm);
         mPanelButtonRight.add(mButtonCancel);
         // 添加到JPanel
-        mPanelInflater.add(mCheckAll);
-        mPanelInflater.add(mLayoutInflater);
-        mPanelInflater.add(mLayoutInflaterField);
+        mInflaterPanel.add(mCheckAll);
+        mInflaterPanel.add(mLayoutInflaterCheckBox);
+        mInflaterPanel.add(mLayoutInflaterField);
         // 添加到JFrame
-        getContentPane().add(mPanelInflater, 2);
+        getContentPane().add(mInflaterPanel, 2);
         getContentPane().add(mPanelButtonRight, 3);
     }
 
@@ -207,8 +211,8 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
     private void initContentPanel() {
         mContentJPanel.removeAll();
         // 设置内容
-        for (int i = 0; i < mElements.size(); i++) {
-            Element mElement = mElements.get(i);
+        for (int i = 0; i < mViewWidgetElements.size(); i++) {
+            ViewWidgetElement mElement = mViewWidgetElements.get(i);
             IdBean itemJPanel = new IdBean(new GridLayout(1, 4, 10, 10),
                     new EmptyBorder(5, 10, 5, 10),
                     new JCheckBox(mElement.getViewName()),
@@ -254,7 +258,7 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
         // 列拉伸0不拉伸，1完全拉伸
         mConstraints.weighty = 0;
         // 设置组件
-        mLayout.setConstraints(mPanelTitle, mConstraints);
+        mLayout.setConstraints(mLabelPanel, mConstraints);
         mConstraints.fill = GridBagConstraints.BOTH;
         mConstraints.gridwidth = 1;
         mConstraints.gridx = 0;
@@ -268,7 +272,7 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
         mConstraints.gridy = 2;
         mConstraints.weightx = 1;
         mConstraints.weighty = 0;
-        mLayout.setConstraints(mPanelInflater, mConstraints);
+        mLayout.setConstraints(mInflaterPanel, mConstraints);
         mConstraints.fill = GridBagConstraints.NONE;
         mConstraints.gridwidth = 0;
         mConstraints.gridx = 0;
@@ -292,15 +296,15 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
      */
     private void setDialog() {
         // 设置标题
-        setTitle(mTitle);
+        setTitle(DIALOG_TITLE);
         // 设置布局管理
         setLayout(mLayout);
-        // 不可拉伸
-        setResizable(false);
+        // 设置是否可拉伸
+        setResizable(true);
         // 设置大小
-        setSize(720, 405);
+//        setSize(DIALOG_WIDTH, DIALOG_HEIGHT);
         // 自适应大小
-        // pack();
+         pack();
         // 设置居中，放在setSize后面
         setLocationRelativeTo(null);
         // 显示最前
@@ -318,22 +322,24 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         switch (e.getActionCommand()) {
-            case "确定":
+            case CMD_CONFIRM:
                 cancelDialog();
-                setCreator(mLayoutInflater.isSelected(), mLayoutInflaterField.getText());
+                setCreator(mLayoutInflaterCheckBox.isSelected(), mLayoutInflaterField.getText());
                 break;
-            case "取消":
+            case CMD_CANCEL:
                 cancelDialog();
                 break;
-            case "CheckAll":
+            case CMD_CHECK_ALL:
                 // 刷新
-                for (Element mElement : mElements) {
+                for (ViewWidgetElement mElement : mViewWidgetElements) {
                     mElement.setEnable(mCheckAll.isSelected());
                 }
                 remove(jScrollPane);
                 initContentPanel();
                 setConstraints();
                 revalidate();
+                break;
+            default:
                 break;
         }
     }
@@ -346,7 +352,7 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
      */
     private void setCreator(boolean isLayoutInflater, String text) {
         new WidgetFieldCreator(this, mEditor, mPsiFile, mClass,
-                "Generate Injections", mElements, mSelectedText, isLayoutInflater, text)
+                "Generate Injections", mViewWidgetElements, mSelectedText, isLayoutInflater, text)
                 .execute();
     }
 }

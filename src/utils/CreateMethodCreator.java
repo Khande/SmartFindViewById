@@ -1,4 +1,4 @@
-package Utils;
+package utils;
 
 import com.intellij.codeInsight.actions.ReformatCodeProcessor;
 import com.intellij.openapi.command.WriteCommandAction.Simple;
