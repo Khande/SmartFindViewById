@@ -38,7 +38,7 @@ public class CreateMethodCreator extends Simple {
         try {
             createMethod(mType);
         } catch (Exception e) {
-            Util.showPopupBalloon(mEditor, e.getMessage(), 10);
+            UIUtils.showPopupBalloon(mEditor, e.getMessage(), 10);
             return;
         }
         // 重写class
@@ -47,9 +47,9 @@ public class CreateMethodCreator extends Simple {
         styleManager.shortenClassReferences(mClass);
         new ReformatCodeProcessor(mProject, mClass.getContainingFile(), null, false).runWithoutProgress();
         if (mType.equals("activity")) {
-            Util.showPopupBalloon(mEditor, "没有OnCreate方法，已创建OnCreate方法，请重新使用FindViewById", 10);
+            UIUtils.showPopupBalloon(mEditor, "没有OnCreate方法，已创建OnCreate方法，请重新使用FindViewById", 10);
         } else if (mType.equals("fragment")) {
-            Util.showPopupBalloon(mEditor, "没有OnCreateView方法，已创建OnCreate方法，请重新使用FindViewById", 10);
+            UIUtils.showPopupBalloon(mEditor, "没有OnCreateView方法，已创建OnCreate方法，请重新使用FindViewById", 10);
         }
     }
 

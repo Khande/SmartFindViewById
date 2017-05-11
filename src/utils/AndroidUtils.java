@@ -1,6 +1,7 @@
 package utils;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.XmlRecursiveElementVisitor;
@@ -15,6 +16,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Taylor on 17/5/10.
@@ -28,6 +31,10 @@ public final class AndroidUtils {
     private static final String TAG_ANDROID_CLICKABLE = "android:clickable";
     private static final String ANDROID_XML_TRUE = "true";
     private static final String XML_FILE_SUFFIX = ".xml";
+    private static final String STRINGS_RES_FILE_NAME = "strings.xml";
+    private static final String SRC_MAIN_RES_VALUES_DIR = "src\\main\\res\\values";
+    public static final String TAG_STRING = "string";
+    public static final String TAG_NAME = "name";
 
     private AndroidUtils() {
 
@@ -121,5 +128,79 @@ public final class AndroidUtils {
         String xmlFileName = fileName + XML_FILE_SUFFIX;
         return (XmlFile) getFileByName(project, xmlFileName);
     }
+
+
+    /**
+     * 获得项目编写的 strings.xml 文件
+     *
+     * @param project 当前项目
+     * @return src/main/res/values 下的 strings.xml 文件对应的 PsiFile 对象
+     */
+    @Nullable
+    public static PsiFile getStringsResourceFile(@NotNull Project project) {
+        PsiFile[] psiFiles = FilenameIndex.getFilesByName(project, STRINGS_RES_FILE_NAME, GlobalSearchScope.allScope(project));
+        if (psiFiles.length < 1) {
+            return null;
+        }
+        for (PsiFile file : psiFiles) {
+            PsiDirectory parentDir = file.getParent();
+            if (parentDir != null) {
+                String parentDirName = parentDir.toString();
+                // 需要考虑项目编译的合并的中间 strings.xml 文件, 这里只考虑项目编写的 strings.xml 文件
+                if (parentDirName.contains(SRC_MAIN_RES_VALUES_DIR)) {
+                    return file;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 从 src/main/values/strings.xml 文件中查找指定 name 为 key 的字符串值
+     *
+     * @param project 当前 Project
+     * @param key     string 键值
+     * @return 指定 name 为 key 的字符串值
+     */
+    @Nullable
+    public static String getTextFromStringsResourceFile(@NotNull final Project project, @NotNull final String key) {
+        PsiFile stringsResourceFile = getStringsResourceFile(project);
+        if (stringsResourceFile == null) {
+            return null;
+        }
+
+        final StringBuilder value = new StringBuilder();
+        stringsResourceFile.accept(new XmlRecursiveElementVisitor() {
+            @Override
+            public void visitElement(PsiElement element) {
+                super.visitElement(element);
+                if (!(element instanceof XmlTag)) {
+                    return;
+                }
+
+                XmlTag tag = (XmlTag) element;
+                String tagName = tag.getName();
+                String nameAttrValue = tag.getAttributeValue(TAG_NAME);
+                if (tagName.equals(TAG_STRING) && nameAttrValue != null && nameAttrValue.equals(key)) {
+                    PsiElement[] children = tag.getChildren();
+                    StringBuilder valueBuilder = new StringBuilder();
+                    for (PsiElement e : children) {
+                        valueBuilder.append(e.getText());
+                    }
+
+                    Pattern p = Pattern.compile("<string name=\"" + key + "\">(.*)</string>");
+                    Matcher matcher = p.matcher(valueBuilder.toString());
+                    while (matcher.find()) {
+                        value.delete(0, value.length());
+                        value.append(matcher.group(1));
+                    }
+                }
+
+
+            }
+        });
+        return value.toString();
+    }
+
 
 }

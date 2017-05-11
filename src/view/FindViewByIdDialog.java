@@ -1,9 +1,10 @@
 package view;
 
+import utils.PlatformUtils;
+import utils.StringUtils;
 import utils.Util;
 import utils.WidgetFieldCreator;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.ui.components.JBScrollPane;
 import entity.ViewWidgetElement;
@@ -17,7 +18,7 @@ import java.awt.event.ActionListener;
 import java.util.List;
 
 /**
- * Created by wangzai on 2016/11/24.
+ * Created by khande on 2017/05/11.
  */
 public class FindViewByIdDialog extends JFrame implements ActionListener {
     private static final String DIALOG_TITLE = "FindViewByIdDialog";
@@ -26,12 +27,11 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
     private static final String CMD_CHECK_ALL = "全选";
     private static final String CMD_CONFIRM = "确定";
     private static final String CMD_CANCEL = "取消";
+    private static final String METHOD_NAME_INIT_VIEW = "initView";
 
     private Editor mEditor;
     private String mSelectedText;
     private List<ViewWidgetElement> mViewWidgetElements;
-    // 获取当前文件
-    private PsiFile mPsiFile;
     // 获取class
     private PsiClass mClass;
     // 判断是否全选
@@ -70,11 +70,10 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
     // GridBagConstraints用来控制添加进的组件的显示位置
     private GridBagConstraints mConstraints = new GridBagConstraints();
 
-    public FindViewByIdDialog(Editor editor, Project project, PsiFile psiFile, PsiClass psiClass, List<ViewWidgetElement> viewWidgetElements, String selectedText) {
+    public FindViewByIdDialog(Editor editor, PsiClass psiClass, List<ViewWidgetElement> viewWidgetElements, String selectedText) {
         mEditor = editor;
         mSelectedText = selectedText;
         mViewWidgetElements = viewWidgetElements;
-        mPsiFile = psiFile;
         mClass = psiClass;
         mElementSize = mViewWidgetElements.size();
         initExist();
@@ -98,20 +97,19 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
         boolean isCaseExist = false;
         PsiField[] fields = mClass.getFields();
         // 获取initView方法的内容
-        PsiStatement[] statements = Util.getInitViewBodyStatements(mClass);
+        PsiStatement[] statements = PlatformUtils.getMethodStatements(mClass, METHOD_NAME_INIT_VIEW);
         PsiElement[] onClickStatement = Util.getOnClickStatement(mClass);
-        for (ViewWidgetElement mElement : mViewWidgetElements) {
+        for (ViewWidgetElement viewWidgetElement : mViewWidgetElements) {
             if (statements != null) {
                 for (PsiStatement statement : statements) {
-                    if (statement.getText().contains(mElement.getFieldName())
-                            && statement.getText().contains("findViewById(" + mElement.getFullViewId() + ");")) {
+                    if (statement.getText().contains("findViewById(" + viewWidgetElement.getFullViewId() + ");")) {
                         isFdExist = true;
                         break;
                     } else {
                         isFdExist = false;
                     }
                 }
-                String setOnClickListener = mElement.getFieldName() + ".setOnClickListener(this);";
+                String setOnClickListener = viewWidgetElement.getFieldName() + ".setOnClickListener(this);";
                 for (PsiStatement statement : statements) {
                     if (statement.getText().equals(setOnClickListener)) {
                         isClickExist = true;
@@ -122,7 +120,7 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
                 }
             }
             if (onClickStatement != null) {
-                String cass = "case " + mElement.getFullViewId() + ":";
+                String cass = "case " + viewWidgetElement.getFullViewId() + ":";
                 for (PsiElement psiElement : onClickStatement) {
                     if (psiElement instanceof PsiSwitchStatement) {
                         PsiSwitchStatement psiSwitchStatement = (PsiSwitchStatement) psiElement;
@@ -146,13 +144,13 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
             }
             for (PsiField field : fields) {
                 String name = field.getName();
-                if (name != null && name.equals(mElement.getFieldName()) && isFdExist) {
+                if (name != null && name.equals(viewWidgetElement.getFieldName()) && isFdExist) {
                     // 已存在的变量设置checkbox为false
-                    mElement.setEnable(false);
+                    viewWidgetElement.setEnable(false);
                     mElementSize--;
-                    if (mElement.isClickEnable() && (!isClickExist || !isCaseExist)) {
-                        mElement.setClickable(true);
-                        mElement.setEnable(true);
+                    if (viewWidgetElement.isClickEnable() && (!isClickExist || !isCaseExist)) {
+                        viewWidgetElement.setClickable(true);
+                        viewWidgetElement.setEnable(true);
                         mElementSize++;
                     }
                     break;
@@ -191,7 +189,8 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
         mButtonConfirm.addActionListener(this);
         mButtonCancel.addActionListener(this);
         // 左边
-        String viewField = "m" + Util.getFieldName(mSelectedText) + "view";
+        String viewField = "m" + StringUtils.transformUnderscore2Camel(mSelectedText) + "view";
+
         mLayoutInflaterField = new JTextField(viewField, viewField.length());
         // 右边
         mPanelButtonRight.add(mButtonConfirm);
@@ -212,20 +211,20 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
         mContentJPanel.removeAll();
         // 设置内容
         for (int i = 0; i < mViewWidgetElements.size(); i++) {
-            ViewWidgetElement mElement = mViewWidgetElements.get(i);
+            ViewWidgetElement element = mViewWidgetElements.get(i);
             IdBean itemJPanel = new IdBean(new GridLayout(1, 4, 10, 10),
                     new EmptyBorder(5, 10, 5, 10),
-                    new JCheckBox(mElement.getViewName()),
-                    new JLabel(mElement.getId()),
+                    new JCheckBox(element.getViewName()),
+                    new JLabel(element.getId()),
                     new JCheckBox(),
-                    new JTextField(mElement.getFieldName()),
-                    mElement.isEnable(),
-                    mElement.isClickable(),
-                    mElement.isClickEnable());
+                    new JTextField(element.getFieldName()),
+                    element.isEnable(),
+                    element.isClickable(),
+                    element.isClickEnable());
             // 监听
-            itemJPanel.setEnableActionListener(enableCheckBox -> mElement.setEnable(enableCheckBox.isSelected()));
-            itemJPanel.setClickActionListener(clickCheckBox -> mElement.setClickable(clickCheckBox.isSelected()));
-            itemJPanel.setFieldFocusListener(fieldJTextField -> mElement.setFieldName(fieldJTextField.getText()));
+            itemJPanel.setEnableActionListener(enableCheckBox -> element.setEnable(enableCheckBox.isSelected()));
+            itemJPanel.setClickActionListener(clickCheckBox -> element.setClickable(clickCheckBox.isSelected()));
+            itemJPanel.setFieldFocusListener(fieldJTextField -> element.setFieldName(fieldJTextField.getText()));
             mContentJPanel.add(itemJPanel);
             mContentConstraints.fill = GridBagConstraints.HORIZONTAL;
             mContentConstraints.gridwidth = 0;
@@ -351,7 +350,7 @@ public class FindViewByIdDialog extends JFrame implements ActionListener {
      * @param text             自定义text
      */
     private void setCreator(boolean isLayoutInflater, String text) {
-        new WidgetFieldCreator(this, mEditor, mPsiFile, mClass,
+        new WidgetFieldCreator(this, mEditor, mClass,
                 "Generate Injections", mViewWidgetElements, mSelectedText, isLayoutInflater, text)
                 .execute();
     }

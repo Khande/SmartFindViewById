@@ -15,6 +15,7 @@ import entity.ViewWidgetElement;
 import org.apache.http.util.TextUtils;
 import utils.AndroidUtils;
 import utils.CreateMethodCreator;
+import utils.UIUtils;
 import utils.Util;
 import view.FindViewByIdDialog;
 
@@ -43,7 +44,7 @@ public class FindViewByIdAction extends AnAction {
             selectedText= Messages.showInputDialog(project, "layout 文件名：（不需要输入 R.layout. 及文件后缀 .xml）",
                     "未选中 layout 文件名，请输入layout 文件名", Messages.getInformationIcon());
             if (TextUtils.isEmpty(selectedText)) {
-                Util.showPopupBalloon(editor, "未输入 layout 文件名", 5);
+                UIUtils.showPopupBalloon(editor, "未输入 layout 文件名", 5);
                 return;
             }
         }
@@ -51,7 +52,7 @@ public class FindViewByIdAction extends AnAction {
         // GlobalSearchScope.allScope(project)搜索整个项目
         XmlFile xmlFile = AndroidUtils.getXmlFileByName(project, selectedText);
         if (xmlFile == null) {
-            Util.showPopupBalloon(editor, "未找到选中的布局文件", 5);
+            UIUtils.showPopupBalloon(editor, "未找到选中的布局文件", 5);
             return;
         }
         List<ViewWidgetElement> viewWidgetElements = new ArrayList<>();
@@ -81,10 +82,10 @@ public class FindViewByIdAction extends AnAction {
             if (mDialog != null && mDialog.isShowing()) {
                 mDialog.cancelDialog();
             }
-            mDialog = new FindViewByIdDialog(editor, project, psiFile, psiClass, viewWidgetElements, selectedText);
+            mDialog = new FindViewByIdDialog(editor, psiClass, viewWidgetElements, selectedText);
             mDialog.showDialog();
         } else {
-            Util.showPopupBalloon(editor, "未找到任何Id", 5);
+            UIUtils.showPopupBalloon(editor, "未找到任何Id", 5);
         }
     }
 }

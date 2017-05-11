@@ -24,8 +24,10 @@
          on how to target different products -->
     <!-- uncomment to enable plugin in all products
     <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.androidstudio/depends>
     -->
 
+    <!--http://www.jetbrains.org/intellij/sdk/docs/basics/plugin_structure/plugin_extensions_and_extension_points.html-->
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
     </extensions>
