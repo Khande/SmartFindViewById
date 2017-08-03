@@ -58,7 +58,7 @@ public class CreateMethodCreator extends Simple {
      * @param mType activity/fragment
      */
     private void createMethod(String mType) {
-        if (Util.isExtendsActivityOrActivityCompat(mProject, mClass)) {
+        if (AndroidUtils.isAnActivityClass(mClass)) {
             // 判断是否有onCreate方法
             if (mClass.findMethodsByName("onCreate", false).length == 0) {
                 // 添加

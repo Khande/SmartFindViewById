@@ -140,6 +140,7 @@ public class ViewWidgetElement {
      *
      * @return view 所对应的成员变量名字符串
      */
+    @NotNull
     public String getFieldName() {
         if (TextUtils.isEmpty(this.fieldName)) {
             String[] names = id.split("_");

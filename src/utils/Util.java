@@ -25,40 +25,6 @@ import java.util.regex.Pattern;
 public class Util {
 
     /**
-     * 根据当前文件获取对应的class文件
-     *
-     * @param editor
-     * @param file
-     * @return
-     */
-    public static PsiClass getTargetClass(Editor editor, PsiFile file) {
-        int offset = editor.getCaretModel().getOffset();
-        PsiElement element = file.findElementAt(offset);
-        if (element == null) {
-            return null;
-        } else {
-            PsiClass target = PsiTreeUtil.getParentOfType(element, PsiClass.class);
-            return target instanceof SyntheticElement ? null : target;
-        }
-    }
-
-    /**
-     * 判断mClass是不是继承activityClass或者activityCompatClass
-     *
-     * @param mProject
-     * @param mClass
-     * @return
-     */
-    public static boolean isExtendsActivityOrActivityCompat(Project mProject, PsiClass mClass) {
-        // 根据类名查找类
-        PsiClass activityClass = JavaPsiFacade.getInstance(mProject).findClass("android.app.Activity", new EverythingGlobalScope(mProject));
-        PsiClass activityCompatClass = JavaPsiFacade.getInstance(mProject).findClass("android.support.v7.app.AppCompatActivity", new EverythingGlobalScope(mProject));
-        return (activityClass != null && mClass.isInheritor(activityClass, true))
-                || (activityCompatClass != null && mClass.isInheritor(activityCompatClass, true))
-                || mClass.getName().contains("Activity");
-    }
-
-    /**
      * 判断mClass是不是继承fragmentClass或者fragmentV4Class
      *
      * @param mProject

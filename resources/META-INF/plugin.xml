@@ -36,7 +36,7 @@
         <!-- Add your actions here -->
         <action id="GenerateFindViewByIdAction" class="action.FindViewByIdAction" text="FindViewById"
                 description="GenerateFindViewByIdAction">
-            <add-to-group group-id="CodeMenu" anchor="first"/>
+            <add-to-group group-id="CodeMenu" anchor="last"/>
             <add-to-group group-id="GenerateGroup" anchor="first"/>
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt E"/>
         </action>

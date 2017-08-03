@@ -1,9 +1,14 @@
 package utils;
 
 import com.intellij.codeInsight.actions.ReformatCodeProcessor;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.PsiUtil;
+import com.intellij.psi.util.PsiUtilBase;
+import org.bouncycastle.asn1.crmf.PKIPublicationInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,6 +49,51 @@ public final class PlatformUtils {
         }
         return null;
     }
+
+
+    /**
+     * 根据当前文件获取其对应的class
+     *
+     * @param editor 当前项目编辑器
+     * @return 当前编辑器内的文件的类
+     */
+    @Nullable
+    public static PsiClass getPsiClassInEditor(@NotNull final Editor editor) {
+        PsiElement element = PsiUtilBase.getElementAtCaret(editor);
+        if (element == null) {
+            return null;
+        } else {
+            PsiClass target = PsiTreeUtil.getParentOfType(element, PsiClass.class);
+            return target instanceof SyntheticElement ? null : target;
+        }
+    }
+
+
+    public static boolean checkStatementExist(@NotNull String srcStatement, @NotNull PsiStatement[] psiStatements) {
+        boolean isExist = false;
+        for (PsiStatement psiStatement : psiStatements) {
+            if (psiStatement.getText().contains(srcStatement)) {
+                isExist = true;
+                break;
+            }
+        }
+        return isExist;
+    }
+
+
+    public static boolean isClassImplementInterface(@NotNull final PsiClass psiClass, @NotNull final String interfaceName) {
+        PsiReferenceList implementsList = psiClass.getImplementsList();
+        if (implementsList != null) {
+            PsiJavaCodeReferenceElement[] referenceElements = implementsList.getReferenceElements();
+            for (PsiJavaCodeReferenceElement referenceElement : referenceElements) {
+                if (referenceElement.getText().contains(interfaceName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 
 
 }

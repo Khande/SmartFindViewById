@@ -1,10 +1,8 @@
 package utils;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.XmlRecursiveElementVisitor;
+import com.intellij.psi.*;
+import com.intellij.psi.search.EverythingGlobalScope;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.xml.XmlAttribute;
@@ -12,6 +10,7 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import entity.ViewWidgetElement;
 import org.apache.http.util.TextUtils;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -201,6 +200,24 @@ public final class AndroidUtils {
         });
         return value.toString();
     }
+
+
+    /**
+     * 判断当前打开的类文件是否是一个 Activity class
+     * 通过判断是 android.app.Activity 类的直接子类或间接子类来确定，
+     * 如继承了 AppCompatActivity, FragmentActivity 都是 Activity 的子类，因为 AppCompatActivity 等是 Activity 的间接子类.
+     * @param psiClass current opened & displayed file's class
+     * @return <code>true</code> means yes, <code>false</code> means no
+     */
+    public static boolean isAnActivityClass(@NotNull final PsiClass psiClass) {
+        Project project = psiClass.getProject();
+        EverythingGlobalScope globalScope = new EverythingGlobalScope(project);
+        PsiClass activityClass = JavaPsiFacade.getInstance(project).findClass("android.app.Activity", globalScope);
+        return (activityClass != null && psiClass.isInheritor(activityClass, true));
+    }
+
+
+
 
 
 }
