@@ -69,6 +69,7 @@ public final class AndroidUtils {
                                           if (includedLayoutFile != null) {
                                               getAllViewIdsFromLayoutFile(includedLayoutFile, elements);
                                           }
+                                          return;
                                       }
 
                                       XmlAttribute idAttr = tag.getAttribute(TAG_ANDROID_ID, null);
