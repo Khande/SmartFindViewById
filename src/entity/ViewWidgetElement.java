@@ -3,17 +3,15 @@ package entity;
 import com.intellij.psi.xml.XmlTag;
 import org.apache.http.util.TextUtils;
 import org.jetbrains.annotations.NotNull;
+import utils.AndroidUtils;
 import utils.StringUtils;
 
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * layout xml 文件中 view Widget 元素
  */
 public class ViewWidgetElement {
-    // 判断id正则
-    private static final Pattern VIEW_ID_PATTERN = Pattern.compile("@\\+?(android:)?id/([^$]+)$", Pattern.CASE_INSENSITIVE);
 
     // android:id 属性字符串
     private String id;
@@ -27,11 +25,9 @@ public class ViewWidgetElement {
 
     private XmlTag xmlTag;
 
-    // 是否生成
-    private boolean isEnable = true;
+    private boolean isNeedGenerate = true;
 
-    // 是否有clickable
-    private boolean clickEnable = false;
+    private boolean isGenerateOnClickMethod = false;
 
     // 是否Clickable
     private boolean clickable = false;
@@ -46,8 +42,7 @@ public class ViewWidgetElement {
      * @throws IllegalArgumentException When the arguments are invalid
      */
     public ViewWidgetElement(@NotNull String viewNameTag, String id, boolean clickable, XmlTag xml) {
-        // id
-        final Matcher matcher = VIEW_ID_PATTERN.matcher(id);
+        final Matcher matcher = AndroidUtils.VIEW_ID_PATTERN.matcher(id);
         if (matcher.find() && matcher.groupCount() > 1) {
             this.id = matcher.group(2);
         }
@@ -58,13 +53,14 @@ public class ViewWidgetElement {
 
         this.viewName = extractViewName(viewNameTag);
 
-        this.clickEnable = clickable;
-
         this.clickable = clickable;
+
+        setGenerateOnClickMethod(clickable, viewName);
 
         this.xmlTag = xml;
     }
 
+    @NotNull
     private String extractViewName(@NotNull String viewNameTag) {
         String[] packages = viewNameTag.split("\\.");
         String viewName;
@@ -101,20 +97,24 @@ public class ViewWidgetElement {
         this.xmlTag = xmlTag;
     }
 
-    public boolean isEnable() {
-        return isEnable;
+    public boolean isNeedGenerate() {
+        return isNeedGenerate;
     }
 
-    public void setEnable(boolean enable) {
-        isEnable = enable;
+    public void setNeedGenerate(boolean needGenerate) {
+        isNeedGenerate = needGenerate;
     }
 
-    public boolean isClickEnable() {
-        return clickEnable;
+    public boolean isGenerateOnClickMethod() {
+        return isGenerateOnClickMethod;
     }
 
-    public void setClickEnable(boolean clickEnable) {
-        this.clickEnable = clickEnable;
+    private void setGenerateOnClickMethod(final boolean clickable, @NotNull final String viewName) {
+        isGenerateOnClickMethod = clickable || viewName.contains("Button");
+    }
+
+    public void setGenerateOnClickMethod(boolean generateOnClickMethod) {
+        this.isGenerateOnClickMethod = generateOnClickMethod;
     }
 
     public boolean isClickable() {
@@ -131,7 +131,7 @@ public class ViewWidgetElement {
      * @return 形如 R.id.aa_bb_cc 的 android:id 字符串
      */
     public String getFullViewId() {
-        return "R.id." + id;
+        return AndroidUtils.VIEW_ID_SUFFIX + id;
     }
 
     /**

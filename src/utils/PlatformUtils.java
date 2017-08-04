@@ -6,9 +6,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.util.PsiUtil;
 import com.intellij.psi.util.PsiUtilBase;
-import org.bouncycastle.asn1.crmf.PKIPublicationInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -92,6 +90,23 @@ public final class PlatformUtils {
             }
         }
         return false;
+    }
+
+
+    public static boolean isMethodInvoked(@NotNull final PsiStatement statement, @NotNull final String methodName, String... params) {
+        String statementText = statement.getText();
+        boolean isInvoked = statementText.contains(methodName);
+        if (!isInvoked) {
+            return false;
+        }
+
+        for (int i = 0; i < params.length; i++) {
+            isInvoked = isInvoked && statementText.contains(params[i]);
+            if (!isInvoked) {
+                return false;
+            }
+        }
+        return true;
     }
 
 

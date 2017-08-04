@@ -3,13 +3,11 @@ package view;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.psi.*;
 import com.intellij.ui.components.JBScrollPane;
-import entity.IdBean;
 import entity.ViewWidgetElement;
 import org.apache.http.util.TextUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import utils.PlatformUtils;
-import utils.Util;
 import utils.WidgetFieldCreator;
 
 import javax.swing.*;
@@ -17,8 +15,6 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
-
-import static utils.WidgetFieldCreator.METHOD_NAME_INIT_VIEW;
 
 /**
  * Created by khande on 2017/05/11.
@@ -37,13 +33,9 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
     private static final int OUT_GROUP_VERTICAL_GAP = 20;
 
     private Editor mEditor;
-    private String mLayoutFileName;
     private List<ViewWidgetElement> mViewWidgetElements;
     // 获取class
     private PsiClass mClass;
-    // 判断是否全选
-    private int mElementSize;
-
 
     private final JButton mConfirmButton = new JButton(CMD_CONFIRM);
 
@@ -51,28 +43,12 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
     private final JCheckBox mRootViewCheckBox = new JCheckBox(CMD_CHECK_ROOT_VIEW);
     private final JTextField mRootViewNameTextField = new JTextField(ROOT_VIEW_NAME_DEFAULT, ROOT_VIEW_NAME_DEFAULT.length() + 4);
 
-
-    // 内容JPanel
-    private JPanel mContentJPanel = new JPanel();
-    private GridBagLayout mContentLayout = new GridBagLayout();
-    private GridBagConstraints mContentConstraints = new GridBagConstraints();
-    // 内容JBScrollPane滚动
-    private JBScrollPane jScrollPane;
-
-    // GridBagLayout不要求组件的大小相同便可以将组件垂直、水平或沿它们的基线对齐
-    private GridBagLayout mLayout = new GridBagLayout();
-    // GridBagConstraints用来控制添加进的组件的显示位置
-    private GridBagConstraints mConstraints = new GridBagConstraints();
-
     public FindViewByIdDialog(@NotNull final Editor editor, @NotNull final PsiClass psiClass,
-                              @NotNull final List<ViewWidgetElement> viewWidgetElements, @NotNull final String layoutFileName) {
+                              @NotNull final List<ViewWidgetElement> viewWidgetElements) {
         mEditor = editor;
-        mLayoutFileName = layoutFileName;
         mViewWidgetElements = viewWidgetElements;
         mClass = psiClass;
-        mElementSize = mViewWidgetElements.size();
-        initExist();
-        initContentPanel();
+        prepareUI();
     }
 
     public FindViewByIdDialog() {
@@ -81,6 +57,8 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
 
     private void prepareUI() {
         setTitle(DIALOG_TITLE);
+
+        initSomeUIFromData();
 
         // 整个布局 panel
         JPanel contentPane = new JPanel(new GridBagLayout());
@@ -101,6 +79,16 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
         topLabelsGbc.weighty = 1;
         contentPane.add(topLabelsPanel, topLabelsGbc);
 
+        refreshViewWidgetElementsPanel();
+        GridBagConstraints viewWidgetElementsGbc = new GridBagConstraints();
+        viewWidgetElementsGbc.fill = GridBagConstraints.BOTH;
+        viewWidgetElementsGbc.gridwidth = 1;
+        viewWidgetElementsGbc.gridx = 0;
+        viewWidgetElementsGbc.gridy = 1;
+        viewWidgetElementsGbc.weightx = 1;
+        viewWidgetElementsGbc.weighty = 1;
+        contentPane.add(mViewWidgetElementsScrollPanel, viewWidgetElementsGbc);
+
 
         JPanel optionsPanel = createOptionsPanel();
         GridBagConstraints optionsGbc = new GridBagConstraints();
@@ -116,6 +104,7 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
         JPanel bottomButtonsPanel = createBottomButtonsPanel();
         GridBagConstraints bottomButtonsGbc = new GridBagConstraints();
         bottomButtonsGbc.anchor = GridBagConstraints.LINE_END;
+        bottomButtonsGbc.gridwidth = 0;
         bottomButtonsGbc.gridx = 2;
         bottomButtonsGbc.gridy = 3;
         bottomButtonsGbc.weightx = 1;
@@ -140,75 +129,30 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
     }
 
 
-    /**
-     * 判断已存在的变量，设置全选
-     * 判断onclick是否写入
-     */
-    private void initExist() {
-        // 判断是否已存在的变量
-        boolean isFindViewByIdCodeExist = false;
-        // 判断是否已存在setOnClickListener
-        boolean isClickExist = false;
-        // 判断是否存在case R.id.id:
-        boolean isCaseExist = false;
-        // 获取initView方法的内容
+    private void initSomeUIFromData() {
         PsiStatement[] statements = PlatformUtils.getMethodStatements(mClass, WidgetFieldCreator.METHOD_NAME_INIT_VIEW);
-        PsiElement[] onClickStatement = Util.getOnClickStatement(mClass);
-        for (ViewWidgetElement viewWidgetElement : mViewWidgetElements) {
-            if (statements != null) {
-                for (PsiStatement statement : statements) {
-                    if (statement.getText().contains("findViewById(" + viewWidgetElement.getFullViewId() + ");")) {
-                        isFindViewByIdCodeExist = true;
-                        break;
-                    } else {
-                        isFindViewByIdCodeExist = false;
-                    }
-                }
-                String setOnClickListener = viewWidgetElement.getFieldName() + ".setOnClickListener(this);";
-                for (PsiStatement statement : statements) {
-                    if (statement.getText().equals(setOnClickListener)) {
-                        isClickExist = true;
-                        break;
-                    } else {
-                        isClickExist = false;
-                    }
-                }
-            }
-            if (onClickStatement != null) {
-                String cass = "case " + viewWidgetElement.getFullViewId() + ":";
-                for (PsiElement psiElement : onClickStatement) {
-                    if (psiElement instanceof PsiSwitchStatement) {
-                        PsiSwitchStatement psiSwitchStatement = (PsiSwitchStatement) psiElement;
-                        // 获取switch的内容
-                        PsiCodeBlock psiSwitchStatementBody = psiSwitchStatement.getBody();
-                        if (psiSwitchStatementBody != null) {
-                            for (PsiStatement statement : psiSwitchStatementBody.getStatements()) {
-                                if (statement.getText().replace("\n", "").replace("break;", "").equals(cass)) {
-                                    isCaseExist = true;
-                                    break;
-                                } else {
-                                    isCaseExist = false;
-                                }
-                            }
-                        }
-                        if (isCaseExist) {
-                            break;
-                        }
-                    }
-                }
-            }
-            if (isFindViewByIdCodeExist) {
-                // 已存在的变量设置checkbox为false
-                viewWidgetElement.setEnable(false);
-                mElementSize--;
-                if (viewWidgetElement.isClickEnable() && (!isClickExist || !isCaseExist)) {
-                    viewWidgetElement.setClickable(true);
-                    viewWidgetElement.setEnable(true);
-                    mElementSize++;
-                }
-            }
+        if (statements == null) {
+            mCheckAllViewWidgetsCheckBox.setSelected(true);
+            return;
         }
-        mCheckAllViewWidgetsCheckBox.setSelected(mElementSize == mViewWidgetElements.size());
+
+        boolean isFindViewByIdCodeExist = false;
+        for (ViewWidgetElement element : mViewWidgetElements) {
+            boolean isElementFindViewByIdCodeExist = false;
+            for (PsiStatement statement : statements) {
+                if (PlatformUtils.isMethodInvoked(statement, "findViewById", element.getFullViewId())) {
+                    isElementFindViewByIdCodeExist = true;
+                    isFindViewByIdCodeExist = true;
+                    break;
+                }
+            }
+
+            if (isElementFindViewByIdCodeExist) {
+                element.setNeedGenerate(false);
+            }
+
+        }
+        mCheckAllViewWidgetsCheckBox.setSelected(!isFindViewByIdCodeExist);
     }
 
 
@@ -216,11 +160,11 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
         JPanel topLabelsPanel = new JPanel(new GridLayout(1, 4, 10, 10));
         topLabelsPanel.setBorder(new EmptyBorder(IN_GROUP_VERTICAL_GAP, LEFT_INSET, OUT_GROUP_VERTICAL_GAP, RIGHT_INSET));
 
-        JLabel viewNameLabel = new JLabel("View 类型");
-        viewNameLabel.setHorizontalAlignment(JLabel.LEFT);
-
         JLabel viewIdLabel = new JLabel("View id");
         viewIdLabel.setHorizontalAlignment(JLabel.LEFT);
+
+        JLabel viewNameLabel = new JLabel("View 类型");
+        viewNameLabel.setHorizontalAlignment(JLabel.LEFT);
 
         JLabel onClickLabel = new JLabel("OnClick");
         onClickLabel.setHorizontalAlignment(JLabel.LEFT);
@@ -228,8 +172,8 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
         JLabel viewFieldNameLabel = new JLabel("目标成员变量名");
         viewFieldNameLabel.setHorizontalAlignment(JLabel.LEFT);
 
-        topLabelsPanel.add(viewNameLabel);
         topLabelsPanel.add(viewIdLabel);
+        topLabelsPanel.add(viewNameLabel);
         topLabelsPanel.add(onClickLabel);
         topLabelsPanel.add(viewFieldNameLabel);
 
@@ -278,82 +222,41 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
         return buttonsPanel;
     }
 
+    private final JPanel mViewWidgetElementsPanel = new JPanel(new GridBagLayout());
+    private final GridBagConstraints mViewWidgetElementConstraints = new GridBagConstraints();
+    private final JBScrollPane mViewWidgetElementsScrollPanel = new JBScrollPane(mViewWidgetElementsPanel);
 
-    /**
-     * 解析mElements，并添加到JPanel
-     */
-    private void initContentPanel() {
-        mContentJPanel.removeAll();
-        // 设置内容
-        for (int i = 0; i < mViewWidgetElements.size(); i++) {
+    private void refreshViewWidgetElementsPanel() {
+        mViewWidgetElementsPanel.removeAll();
+
+        mViewWidgetElementConstraints.fill = GridBagConstraints.HORIZONTAL;
+        mViewWidgetElementConstraints.gridwidth = 0;
+        mViewWidgetElementConstraints.gridx = 0;
+        mViewWidgetElementConstraints.weightx = 1;
+
+        for (int i = 0, size = mViewWidgetElements.size(); i < size; i++) {
             ViewWidgetElement element = mViewWidgetElements.get(i);
-            IdBean itemJPanel = new IdBean(new GridLayout(1, 4, 10, 10),
-                    new EmptyBorder(5, 10, 5, 10),
-                    new JCheckBox(element.getViewName()),
-                    new JLabel(element.getId()),
-                    new JCheckBox(),
-                    new JTextField(element.getFieldName()),
-                    element.isEnable(),
-                    element.isClickable(),
-                    element.isClickEnable());
-            // 监听
-            itemJPanel.setEnableActionListener(enableCheckBox -> element.setEnable(enableCheckBox.isSelected()));
-            itemJPanel.setClickActionListener(clickCheckBox -> element.setClickable(clickCheckBox.isSelected()));
-            itemJPanel.setFieldFocusListener(fieldJTextField -> element.setFieldName(fieldJTextField.getText()));
-            mContentJPanel.add(itemJPanel);
-            mContentConstraints.fill = GridBagConstraints.HORIZONTAL;
-            mContentConstraints.gridwidth = 0;
-            mContentConstraints.gridx = 0;
-            mContentConstraints.gridy = i;
-            mContentConstraints.weightx = 1;
-            mContentLayout.setConstraints(itemJPanel, mContentConstraints);
+            ViewWidgetElementPanel elementPanel = new ViewWidgetElementPanel(element);
+            elementPanel.setOnEnableGenerateThisIdChangedListener(element::setNeedGenerate);
+            elementPanel.setOnEnableGenerateOnClickChangedListener(element::setGenerateOnClickMethod);
+            elementPanel.setOnViewFieldNameChangedListener(viewFieldName -> {
+                if (!viewFieldName.isEmpty()) {
+                    element.setFieldName(viewFieldName);
+                }
+            });
+
+            mViewWidgetElementConstraints.gridy = i;
+            mViewWidgetElementsPanel.add(elementPanel, mViewWidgetElementConstraints);
         }
-        mContentJPanel.setLayout(mContentLayout);
-        jScrollPane = new JBScrollPane(mContentJPanel);
-        jScrollPane.revalidate();
-        // 添加到JFrame
-        getContentPane().add(jScrollPane, 1);
+        mViewWidgetElementsScrollPanel.revalidate();
     }
 
-    /**
-     * 设置Constraints
-     */
-    private void setConstraints() {
-       mConstraints.fill = GridBagConstraints.BOTH;
-        mConstraints.gridwidth = 1;
-        mConstraints.gridx = 0;
-        mConstraints.gridy = 1;
-        mConstraints.weightx = 1;
-        mConstraints.weighty = 1;
-        mLayout.setConstraints(jScrollPane, mConstraints);
-    }
 
-    /**
-     * 显示dialog
-     */
     public void showDialog() {
-        // 显示
-        setVisible(true);
-    }
-
-    /**
-     * 设置JFrame参数
-     */
-    private void setDialog() {
-        // 设置标题
-        setTitle(DIALOG_TITLE);
-        // 设置布局管理
-        setLayout(mLayout);
-        // 设置是否可拉伸
-        setResizable(true);
-        // 设置大小
-//        setSize(DIALOG_WIDTH, DIALOG_HEIGHT);
-        // 自适应大小
-         pack();
-        // 设置居中，放在setSize后面
+        pack();
         setLocationRelativeTo(null);
-        // 显示最前
         setAlwaysOnTop(true);
+        setVisible(true);
     }
 
     /**
@@ -375,14 +278,10 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
                 cancelDialog();
                 break;
             case CMD_CHECK_ALL_VIEW_WIDGETS:
-                // 刷新
-                for (ViewWidgetElement mElement : mViewWidgetElements) {
-                    mElement.setEnable(mCheckAllViewWidgetsCheckBox.isSelected());
+                for (ViewWidgetElement element : mViewWidgetElements) {
+                    element.setNeedGenerate(mCheckAllViewWidgetsCheckBox.isSelected());
                 }
-                remove(jScrollPane);
-                initContentPanel();
-                setConstraints();
-                revalidate();
+                refreshViewWidgetElementsPanel();
                 break;
             default:
                 break;
@@ -393,10 +292,10 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
      * 生成 findViewById 代码
      *
      * @param isRootViewFind 是否是通过 rootView 来 findViewById
-     * @param rootViewName           rootView 变量名
+     * @param rootViewName   rootView 变量名
      */
     private void generateFindViewById(final boolean isRootViewFind, @Nullable final String rootViewName) {
-        String validRootViewName = TextUtils.isBlank(rootViewName)? ROOT_VIEW_NAME_DEFAULT : rootViewName.replace(" ", "");
+        String validRootViewName = TextUtils.isBlank(rootViewName) ? ROOT_VIEW_NAME_DEFAULT : rootViewName.replace(" ", "");
         new WidgetFieldCreator(mEditor, mClass, mViewWidgetElements, isRootViewFind, validRootViewName)
                 .execute();
     }

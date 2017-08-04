@@ -23,6 +23,13 @@ import java.util.regex.Pattern;
  */
 public final class AndroidUtils {
 
+    public static final String INTERFACE_NAME_VIEW_ON_CLICK_LISTENER = "View.OnClickListener";
+    public static final String VIEW_ON_CLICK_LISTENER_FQ_CLASS_PATH = "android.view.View.OnClickListener";
+    public static final String METHOD_NAME_ON_CLICK = "onClick";
+    // 判断id正则
+    public static final Pattern VIEW_ID_PATTERN = Pattern.compile("@\\+?(android:)?id/([^$]+)$", Pattern.CASE_INSENSITIVE);
+    public static final String VIEW_ID_SUFFIX = "R.id.";
+
     private static final String TAG_INCLUDE = "include";
     private static final String TAG_LAYOUT = "layout";
     private static final String TAG_ANDROID_ID = "android:id";

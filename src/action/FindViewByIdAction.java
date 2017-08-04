@@ -63,7 +63,7 @@ public class FindViewByIdAction extends AnAction {
            if (mFindViewByIdDialog != null && mFindViewByIdDialog.isShowing()) {
                 mFindViewByIdDialog.cancelDialog();
             }
-            mFindViewByIdDialog = new FindViewByIdDialog(editor, psiClass, viewWidgetElements, layoutFileName);
+            mFindViewByIdDialog = new FindViewByIdDialog(editor, psiClass, viewWidgetElements);
             mFindViewByIdDialog.showDialog();
         } else {
             UIUtils.showPopupBalloon(editor, "未找到任何带 id 的 Android View.", 5);
