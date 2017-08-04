@@ -30,6 +30,7 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
 
     private Editor mEditor;
     private List<ViewWidgetElement> mViewWidgetElements;
+    private int mNeedGenerateViewWidgetElementSize;
     // 获取class
     private PsiClass mClass;
 
@@ -43,6 +44,7 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
                               @NotNull final List<ViewWidgetElement> viewWidgetElements) {
         mEditor = editor;
         mViewWidgetElements = viewWidgetElements;
+        mNeedGenerateViewWidgetElementSize = viewWidgetElements.size();
         mClass = psiClass;
         prepareUI();
     }
@@ -143,6 +145,7 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
 
             if (isElementFindViewByIdCodeExist) {
                 element.setNeedGenerate(false);
+                mNeedGenerateViewWidgetElementSize --;
             }
 
         }
@@ -235,7 +238,16 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
         for (int i = 0, size = mViewWidgetElements.size(); i < size; i++) {
             ViewWidgetElement element = mViewWidgetElements.get(i);
             ViewWidgetElementPanel elementPanel = new ViewWidgetElementPanel(element);
-            elementPanel.setOnEnableGenerateThisIdChangedListener(element::setNeedGenerate);
+            elementPanel.setOnEnableGenerateThisIdChangedListener(enabled -> {
+                element.setNeedGenerate(enabled);
+                if (enabled) {
+                    mNeedGenerateViewWidgetElementSize++;
+                } else {
+                    mNeedGenerateViewWidgetElementSize--;
+                }
+                mCheckAllViewWidgetsCheckBox.setSelected(mNeedGenerateViewWidgetElementSize == mViewWidgetElements.size());
+
+            });
             elementPanel.setOnEnableGenerateOnClickChangedListener(element::setGenerateOnClickMethod);
             elementPanel.setOnViewFieldNameChangedListener(viewFieldName -> {
                 if (!viewFieldName.isEmpty()) {
