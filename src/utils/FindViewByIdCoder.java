@@ -16,7 +16,6 @@ public class FindViewByIdCoder extends Simple {
     public static final String METHOD_NAME_INIT_VIEW = "initView";
 
     private Editor mEditor;
-    private Project mProject;
     private PsiClass mClass;
     private PsiElementFactory mElementFactory;
 
@@ -32,11 +31,12 @@ public class FindViewByIdCoder extends Simple {
         super(psiClass.getProject(), TAG);
         mEditor = editor;
         mClass = psiClass;
-        mProject = psiClass.getProject();
 
         mViewWidgetElements = viewWidgetElements;
         // 获取Factory
-        mElementFactory = JavaPsiFacade.getElementFactory(mProject);
+        Project project = psiClass.getProject();
+        mElementFactory = JavaPsiFacade.getElementFactory(project);
+
         mIsRootViewFind = isRootViewFind;
         mRootViewName = rootViewName;
 
@@ -54,6 +54,7 @@ public class FindViewByIdCoder extends Simple {
             writeViewFieldsCode();
             writeInitViewCode();
             writeOnClickListenerCode();
+            writeInitViewStatementIfNeeded();
         } catch (Exception e) {
             UIUtils.showPopupBalloon(mEditor, e.getMessage(), 5);
             Logger.error(e.getMessage());
@@ -216,7 +217,7 @@ public class FindViewByIdCoder extends Simple {
                 onClickMethodBuilder.append("case ");
                 onClickMethodBuilder.append(element.getFullViewId());
                 onClickMethodBuilder.append(":\n");
-                onClickMethodBuilder.append("//TODO \n");
+                onClickMethodBuilder.append("\t\t\t\t//TODO \n");
                 onClickMethodBuilder.append("break;\n");
             }
             onClickMethodBuilder.append("}\n");
@@ -226,71 +227,43 @@ public class FindViewByIdCoder extends Simple {
     }
 
 
-    /**
-     * 设置变量的值FindViewById，Activity和Fragment
-     */
-    private void generateFindViewById() {
-        if (AndroidUtils.isAnActivityClass(mClass)) {
-            // 判断是否有onCreate方法
-            if (mClass.findMethodsByName("onCreate", false).length == 0) {
-            } else {
-                writeViewFieldsCode();
+    private void writeInitViewStatementIfNeeded() {
+        boolean isAnActivityClass = AndroidUtils.isAnActivityClass(mClass);
+        Logger.warn("This class is not an Activity class");
+        if (!isAnActivityClass) {
+            return;
+        }
 
-                // 获取setContentView
-                PsiStatement setContentViewStatement = null;
-                // onCreate是否存在initView方法
-                boolean hasInitViewStatement = false;
+        PsiMethod[] onCreateMethods = mClass.findMethodsByName(AndroidUtils.METHOD_NAME_ON_CREATE, false);
+        if (onCreateMethods.length < 1) {
+            return;
+        }
 
-                PsiMethod onCreate = mClass.findMethodsByName("onCreate", false)[0];
-                for (PsiStatement psiStatement : onCreate.getBody().getStatements()) {
-                    // 查找setContentView
-                    if (psiStatement.getFirstChild() instanceof PsiMethodCallExpression) {
-                        PsiReferenceExpression methodExpression = ((PsiMethodCallExpression) psiStatement.getFirstChild()).getMethodExpression();
-                        if (methodExpression.getText().equals("setContentView")) {
-                            setContentViewStatement = psiStatement;
-                        } else if (methodExpression.getText().equals("initView")) {
-                            hasInitViewStatement = true;
-                        }
-                    }
-                }
+        PsiMethod onCreateMethod = onCreateMethods[0];
+        PsiCodeBlock onCreateMethodBody = onCreateMethod.getBody();
+        if (onCreateMethodBody == null) {
+            return;
+        }
 
-                if (!hasInitViewStatement && setContentViewStatement != null) {
-                    // 将initView()写到setContentView()后面
-                    onCreate.getBody().addAfter(mElementFactory.createStatementFromText("initView();", mClass), setContentViewStatement);
-                }
-            }
-
-        } else if (Util.isExtendsFragmentOrFragmentV4(mProject, mClass)) {
-            // 判断是否有onCreateView方法
-            if (mClass.findMethodsByName("onCreateView", false).length == 0) {
-
-            } else {
-                writeViewFieldsCode();
-                // 查找onCreateView
-                PsiReturnStatement returnStatement = null;
-                // view
-                String returnValue = null;
-                // onCreateView是否存在initView方法
-                boolean hasInitViewStatement = false;
-
-                PsiMethod onCreate = mClass.findMethodsByName("onCreateView", false)[0];
-                for (PsiStatement psiStatement : onCreate.getBody().getStatements()) {
-                    if (psiStatement instanceof PsiReturnStatement) {
-                        // 获取view的值
-                        returnStatement = (PsiReturnStatement) psiStatement;
-                        returnValue = returnStatement.getReturnValue().getText();
-                    } else if (psiStatement.getFirstChild() instanceof PsiMethodCallExpression) {
-                        PsiReferenceExpression methodExpression = ((PsiMethodCallExpression) psiStatement.getFirstChild()).getMethodExpression();
-                        if (methodExpression.getText().equals("initView")) {
-                            hasInitViewStatement = true;
-                        }
-                    }
-                }
-
-                if (!hasInitViewStatement && returnStatement != null && returnValue != null) {
-                    onCreate.getBody().addBefore(mElementFactory.createStatementFromText("initView(" + returnValue + ");", mClass), returnStatement);
+        // 获取setContentView
+        PsiStatement setContentViewStatement = null;
+        // onCreate是否存在initView方法
+        boolean hasInitViewStatement = false;
+        for (PsiStatement psiStatement : onCreateMethodBody.getStatements()) {
+            // 查找setContentView
+            if (psiStatement.getFirstChild() instanceof PsiMethodCallExpression) {
+                PsiReferenceExpression methodExpression = ((PsiMethodCallExpression) psiStatement.getFirstChild()).getMethodExpression();
+                if (methodExpression.getText().contains(AndroidUtils.METHOD_NAME_SET_CONTENT_VIEW)) {
+                    setContentViewStatement = psiStatement;
+                } else if (methodExpression.getText().contains(METHOD_NAME_INIT_VIEW)) {
+                    hasInitViewStatement = true;
                 }
             }
+        }
+
+        if (!hasInitViewStatement && setContentViewStatement != null) {
+            // 将initView()写到setContentView()后面
+            onCreateMethodBody.addAfter(mElementFactory.createStatementFromText(METHOD_NAME_INIT_VIEW + "();\n", mClass), setContentViewStatement);
         }
     }
 

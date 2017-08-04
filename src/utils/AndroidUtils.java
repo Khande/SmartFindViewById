@@ -26,6 +26,8 @@ public final class AndroidUtils {
     public static final String INTERFACE_NAME_VIEW_ON_CLICK_LISTENER = "View.OnClickListener";
     public static final String VIEW_ON_CLICK_LISTENER_FQ_CLASS_PATH = "android.view.View.OnClickListener";
     public static final String METHOD_NAME_ON_CLICK = "onClick";
+    public static final String METHOD_NAME_ON_CREATE = "onCreate";
+    public static final String METHOD_NAME_SET_CONTENT_VIEW = "setContentView";
     // 判断id正则
     public static final Pattern VIEW_ID_PATTERN = Pattern.compile("@\\+?(android:)?id/([^$]+)$", Pattern.CASE_INSENSITIVE);
     public static final String VIEW_ID_SUFFIX = "R.id.";
