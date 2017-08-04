@@ -75,37 +75,4 @@ public class Util {
         method.append("}");
         return method.toString();
     }
-
-    /**
-     * 判断是否实现了OnClickListener接口
-     *
-     * @param referenceElements
-     * @return
-     */
-    public static boolean isImplementsOnClickListener(PsiJavaCodeReferenceElement[] referenceElements) {
-        for (PsiJavaCodeReferenceElement referenceElement : referenceElements) {
-            if (referenceElement.getText().contains("OnClickListener")) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    /**
-     * 获取onClick方法里面的每条数据
-     *
-     * @param mClass
-     * @return
-     */
-    public static PsiElement[] getOnClickStatement(PsiClass mClass) {
-        // 获取onClick方法
-        PsiMethod[] onClickMethods = mClass.findMethodsByName("onClick", false);
-        PsiElement[] psiElements = null;
-        if (onClickMethods.length > 0 && onClickMethods[0].getBody() != null) {
-            PsiCodeBlock onClickMethodBody = onClickMethods[0].getBody();
-            psiElements = onClickMethodBody.getChildren();
-        }
-        return psiElements;
-    }
 }

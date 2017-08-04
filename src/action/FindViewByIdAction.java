@@ -11,10 +11,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.xml.XmlFile;
 import entity.ViewWidgetElement;
 import org.apache.http.util.TextUtils;
-import utils.AndroidUtils;
-import utils.Logger;
-import utils.PlatformUtils;
-import utils.UIUtils;
+import utils.*;
 import view.FindViewByIdDialog;
 
 import java.util.ArrayList;
@@ -48,11 +45,13 @@ public class FindViewByIdAction extends AnAction {
         if (TextUtils.isEmpty(layoutFileName)) {
             layoutFileName = Messages.showInputDialog(project, "layout 文件名：（不需要输入 R.layout. 及文件后缀 .xml）",
                     "未选中 layout 文件名，请输入layout 文件名", Messages.getInformationIcon());
-            if (TextUtils.isEmpty(layoutFileName)) {
+            if (TextUtils.isBlank(layoutFileName)) {
                 UIUtils.showPopupBalloon(editor, "未输入 layout 文件名", 5);
                 return;
             }
         }
+
+        layoutFileName = StringUtils.removeBlanksInString(layoutFileName);
 
         XmlFile layoutXmlFile = AndroidUtils.getXmlFileByName(project, layoutFileName);
         if (layoutXmlFile == null) {

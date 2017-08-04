@@ -4,6 +4,7 @@ import entity.ViewWidgetElement;
 import org.apache.http.util.TextUtils;
 import org.jetbrains.annotations.NotNull;
 import utils.Constants;
+import utils.StringUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -88,7 +89,7 @@ public class ViewWidgetElementPanel extends JPanel {
                     if (TextUtils.isBlank(fieldText)) {
                         fieldText = "";
                     }
-                    mOnViewFieldNameChangedListener.onViewFieldNameChanged(fieldText.replace(" ", ""));
+                    mOnViewFieldNameChangedListener.onViewFieldNameChanged(StringUtils.removeBlanksInString(fieldText));
                 }
             }
         });

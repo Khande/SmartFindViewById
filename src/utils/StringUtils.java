@@ -11,6 +11,11 @@ public final class StringUtils {
 
     }
 
+    @NotNull
+    public static String removeBlanksInString(@NotNull final String s) {
+        return s.replace(" ", "");
+    }
+
     /**
      * 大写单词首字母
      *
