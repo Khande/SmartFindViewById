@@ -60,7 +60,6 @@ public class ViewWidgetElementPanel extends JPanel {
 
         mEnableGenerateThisIdCheckbox.addActionListener(e -> {
             boolean enabled = mEnableGenerateThisIdCheckbox.isSelected();
-            mGenerateOnClickCheckBox.setEnabled(enabled);
             mViewFieldNameTextField.setEnabled(enabled);
             if (mOnEnableGenerateThisIdChangedListener != null) {
                 mOnEnableGenerateThisIdChangedListener.onEnableGenerateThisIdChanged(enabled);

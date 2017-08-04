@@ -10,9 +10,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WidgetFieldCreator extends Simple {
+public class FindViewByIdCoder extends Simple {
 
-    private static final String TAG = "WidgetFieldCreator";
+    private static final String TAG = "FindViewByIdCoder";
     public static final String METHOD_NAME_INIT_VIEW = "initView";
 
     private Editor mEditor;
@@ -26,9 +26,9 @@ public class WidgetFieldCreator extends Simple {
 
     private final List<ViewWidgetElement> mGenerateOnClickElementList = new ArrayList<>();
 
-    public WidgetFieldCreator(@NotNull final Editor editor, @NotNull final PsiClass psiClass,
-                              @NotNull final List<ViewWidgetElement> viewWidgetElements,
-                              final boolean isRootViewFind, @NotNull final String rootViewName) {
+    public FindViewByIdCoder(@NotNull final Editor editor, @NotNull final PsiClass psiClass,
+                             @NotNull final List<ViewWidgetElement> viewWidgetElements,
+                             final boolean isRootViewFind, @NotNull final String rootViewName) {
         super(psiClass.getProject(), TAG);
         mEditor = editor;
         mClass = psiClass;
@@ -42,7 +42,7 @@ public class WidgetFieldCreator extends Simple {
 
         mGenerateOnClickElementList.clear();
         for (ViewWidgetElement element : mViewWidgetElements) {
-            if (element.isNeedGenerate() && element.isGenerateOnClickMethod()) {
+            if (element.isGenerateOnClickMethod()) {
                 mGenerateOnClickElementList.add(element);
             }
         }
@@ -197,7 +197,7 @@ public class WidgetFieldCreator extends Simple {
                                 StringBuilder switchCaseBuilder = new StringBuilder("case ");
                                 switchCaseBuilder.append(element.getFullViewId());
                                 switchCaseBuilder.append(":\n");
-                                switchCaseBuilder.append("//TODO \n");
+                                switchCaseBuilder.append("\t\t\t\t//TODO \n");
                                 switchCaseBuilder.append("break;\n");
                                 psiSwitchStatementBody.add(
                                         mElementFactory.createStatementFromText(switchCaseBuilder.toString(), psiSwitchStatementBody));
@@ -210,7 +210,7 @@ public class WidgetFieldCreator extends Simple {
             }
         } else {
             StringBuilder onClickMethodBuilder = new StringBuilder();
-            onClickMethodBuilder.append("@Override\n public void onClick(view v) {\n");
+            onClickMethodBuilder.append("@Override\n public void onClick(View v) {\n");
             onClickMethodBuilder.append("switch (v.getId()) {\n");
             for (ViewWidgetElement element : mGenerateOnClickElementList) {
                 onClickMethodBuilder.append("case ");

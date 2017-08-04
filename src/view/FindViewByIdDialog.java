@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import utils.Constants;
 import utils.PlatformUtils;
-import utils.WidgetFieldCreator;
+import utils.FindViewByIdCoder;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -124,7 +124,7 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
 
 
     private void initSomeUIFromData() {
-        PsiStatement[] statements = PlatformUtils.getMethodStatements(mClass, WidgetFieldCreator.METHOD_NAME_INIT_VIEW);
+        PsiStatement[] statements = PlatformUtils.getMethodStatements(mClass, FindViewByIdCoder.METHOD_NAME_INIT_VIEW);
         if (statements == null) {
             mCheckAllViewWidgetsCheckBox.setSelected(true);
             return;
@@ -294,7 +294,7 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
      */
     private void generateFindViewById(final boolean isRootViewFind, @Nullable final String rootViewName) {
         String validRootViewName = TextUtils.isBlank(rootViewName) ? ROOT_VIEW_NAME_DEFAULT : rootViewName.replace(" ", "");
-        new WidgetFieldCreator(mEditor, mClass, mViewWidgetElements, isRootViewFind, validRootViewName)
+        new FindViewByIdCoder(mEditor, mClass, mViewWidgetElements, isRootViewFind, validRootViewName)
                 .execute();
     }
 
