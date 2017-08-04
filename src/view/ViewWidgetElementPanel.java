@@ -5,7 +5,6 @@ import org.apache.http.util.TextUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -30,7 +29,6 @@ public class ViewWidgetElementPanel extends JPanel {
         initChildrenComponents(element);
 
         setLayout(new GridLayout(1, 4, 10, 10));
-        setBorder(new EmptyBorder(5, 10, 5, 10));
         add(mEnableGenerateThisIdCheckbox);
         add(mViewNameLabel);
         add(mGenerateOnClickCheckBox);

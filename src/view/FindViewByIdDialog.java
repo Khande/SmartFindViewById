@@ -7,7 +7,7 @@ import entity.ViewWidgetElement;
 import org.apache.http.util.TextUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import utils.Logger;
+import utils.Constants;
 import utils.PlatformUtils;
 import utils.WidgetFieldCreator;
 
@@ -28,11 +28,6 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
     private static final String CMD_CANCEL = "取消";
     private static final String ROOT_VIEW_NAME_DEFAULT = "itemView";
 
-    private static final int LEFT_INSET = 28;
-    private static final int RIGHT_INSET = 28;
-    private static final int IN_GROUP_VERTICAL_GAP = 12;
-    private static final int OUT_GROUP_VERTICAL_GAP = 20;
-
     private Editor mEditor;
     private List<ViewWidgetElement> mViewWidgetElements;
     // 获取class
@@ -52,10 +47,6 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
         prepareUI();
     }
 
-    public FindViewByIdDialog() {
-        prepareUI();
-    }
-
     private void prepareUI() {
         setTitle(DIALOG_TITLE);
 
@@ -66,8 +57,8 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
 
         JPanel topLabelsPanel = createTopLabelsPanel();
         GridBagConstraints topLabelsGbc = new GridBagConstraints();
-        // 使组件水平填满其显示区域
-        topLabelsGbc.fill = GridBagConstraints.HORIZONTAL;
+        // 使组件完全填满其显示区域
+        topLabelsGbc.fill = GridBagConstraints.BOTH;
         // 设置组件水平所占用的格子数，如果为0，就说明该组件是该行的最后一个
         topLabelsGbc.gridwidth = 0;
         // 第几列
@@ -77,7 +68,7 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
         // 行拉伸0不拉伸，1完全拉伸
         topLabelsGbc.weightx = 1;
         // 列拉伸0不拉伸，1完全拉伸
-        topLabelsGbc.weighty = 1;
+        topLabelsGbc.weighty = 0;
         contentPane.add(topLabelsPanel, topLabelsGbc);
 
         refreshViewWidgetElementsPanel();
@@ -88,6 +79,8 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
         viewWidgetElementsGbc.gridy = 1;
         viewWidgetElementsGbc.weightx = 1;
         viewWidgetElementsGbc.weighty = 1;
+        mViewWidgetElementsScrollPanel.setBorder(new EmptyBorder(Constants.Dimen.OUT_GROUP_VERTICAL_GAP, Constants.Dimen.LEFT_INSET,
+                Constants.Dimen.OUT_GROUP_VERTICAL_GAP, Constants.Dimen.RIGHT_INSET));
         contentPane.add(mViewWidgetElementsScrollPanel, viewWidgetElementsGbc);
 
 
@@ -106,7 +99,7 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
         GridBagConstraints bottomButtonsGbc = new GridBagConstraints();
         bottomButtonsGbc.anchor = GridBagConstraints.LINE_END;
         bottomButtonsGbc.gridwidth = 0;
-        bottomButtonsGbc.gridx = 2;
+        bottomButtonsGbc.gridx = 0; // 此处是整个 UI 对齐的关键
         bottomButtonsGbc.gridy = 3;
         bottomButtonsGbc.weightx = 1;
         contentPane.add(bottomButtonsPanel, bottomButtonsGbc);
@@ -159,9 +152,11 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
 
     private JPanel createTopLabelsPanel() {
         JPanel topLabelsPanel = new JPanel(new GridLayout(1, 4, 10, 10));
-        topLabelsPanel.setBorder(new EmptyBorder(IN_GROUP_VERTICAL_GAP, LEFT_INSET, OUT_GROUP_VERTICAL_GAP, RIGHT_INSET));
+        topLabelsPanel.setBorder(new EmptyBorder(Constants.Dimen.IN_GROUP_VERTICAL_GAP, Constants.Dimen.LEFT_INSET,
+                Constants.Dimen.OUT_GROUP_VERTICAL_GAP, Constants.Dimen.RIGHT_INSET));
 
-        JLabel viewIdLabel = new JLabel("View id");
+        JLabel viewIdLabel = new JLabel("View Id");
+        viewIdLabel.setBorder(new EmptyBorder(0, Constants.Dimen.LEFT_INSET, 0, 0));
         viewIdLabel.setHorizontalAlignment(JLabel.LEFT);
 
         JLabel viewNameLabel = new JLabel("View 类型");
@@ -170,7 +165,7 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
         JLabel onClickLabel = new JLabel("OnClick");
         onClickLabel.setHorizontalAlignment(JLabel.LEFT);
 
-        JLabel viewFieldNameLabel = new JLabel("目标成员变量名");
+        JLabel viewFieldNameLabel = new JLabel("View成员变量名");
         viewFieldNameLabel.setHorizontalAlignment(JLabel.LEFT);
 
         topLabelsPanel.add(viewIdLabel);
@@ -184,7 +179,8 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
 
     private JPanel createOptionsPanel() {
         JPanel optionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        optionsPanel.setBorder(new EmptyBorder(IN_GROUP_VERTICAL_GAP, LEFT_INSET, OUT_GROUP_VERTICAL_GAP, RIGHT_INSET));
+        optionsPanel.setBorder(new EmptyBorder(Constants.Dimen.IN_GROUP_VERTICAL_GAP, Constants.Dimen.LEFT_INSET,
+                Constants.Dimen.OUT_GROUP_VERTICAL_GAP, Constants.Dimen.RIGHT_INSET));
 
         mCheckAllViewWidgetsCheckBox.addActionListener(this);
         optionsPanel.add(mCheckAllViewWidgetsCheckBox);
@@ -204,7 +200,8 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
         cancelButton.addActionListener(this);
 
         JPanel buttonsPanel = new JPanel();
-        buttonsPanel.setBorder(new EmptyBorder(IN_GROUP_VERTICAL_GAP, LEFT_INSET, IN_GROUP_VERTICAL_GAP, RIGHT_INSET));
+        buttonsPanel.setBorder(new EmptyBorder(Constants.Dimen.IN_GROUP_VERTICAL_GAP, Constants.Dimen.LEFT_INSET,
+                Constants.Dimen.IN_GROUP_VERTICAL_GAP, Constants.Dimen.RIGHT_INSET));
 
         GroupLayout buttonsGroupLayout = new GroupLayout(buttonsPanel);
         buttonsPanel.setLayout(buttonsGroupLayout);
@@ -299,18 +296,6 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
         String validRootViewName = TextUtils.isBlank(rootViewName) ? ROOT_VIEW_NAME_DEFAULT : rootViewName.replace(" ", "");
         new WidgetFieldCreator(mEditor, mClass, mViewWidgetElements, isRootViewFind, validRootViewName)
                 .execute();
-    }
-
-
-    // FIXME: 17/8/3 UI test code
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            FindViewByIdDialog dialog = new FindViewByIdDialog();
-            dialog.pack();
-            dialog.setLocationRelativeTo(null);
-            dialog.setAlwaysOnTop(true);
-            dialog.setVisible(true);
-        });
     }
 
 
