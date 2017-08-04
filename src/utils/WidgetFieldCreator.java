@@ -55,7 +55,8 @@ public class WidgetFieldCreator extends Simple {
             writeInitViewCode();
             writeOnClickListenerCode();
         } catch (Exception e) {
-            UIUtils.showPopupBalloon(mEditor, e.getMessage(), 10);
+            UIUtils.showPopupBalloon(mEditor, e.getMessage(), 5);
+            Logger.error(e.getMessage());
             return;
         }
         PlatformUtils.prettifyJavaCode(mClass);
@@ -95,7 +96,7 @@ public class WidgetFieldCreator extends Simple {
 
     private void writeInitViewCode() {
         PsiMethod[] initViewMethods = mClass.findMethodsByName(METHOD_NAME_INIT_VIEW, false);
-        if (initViewMethods.length > 0 & initViewMethods[0].getBody() != null) {
+        if (initViewMethods.length > 0 && initViewMethods[0].getBody() != null) {
             PsiCodeBlock initViewMethodBody = initViewMethods[0].getBody();
             PsiStatement[] statements = initViewMethodBody.getStatements();
             for (ViewWidgetElement element : mViewWidgetElements) {

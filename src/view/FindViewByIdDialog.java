@@ -7,6 +7,7 @@ import entity.ViewWidgetElement;
 import org.apache.http.util.TextUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import utils.Logger;
 import utils.PlatformUtils;
 import utils.WidgetFieldCreator;
 

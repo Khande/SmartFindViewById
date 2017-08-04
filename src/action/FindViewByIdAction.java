@@ -12,6 +12,7 @@ import com.intellij.psi.xml.XmlFile;
 import entity.ViewWidgetElement;
 import org.apache.http.util.TextUtils;
 import utils.AndroidUtils;
+import utils.Logger;
 import utils.PlatformUtils;
 import utils.UIUtils;
 import view.FindViewByIdDialog;
@@ -24,6 +25,8 @@ public class FindViewByIdAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
+        Logger.init("FindViewById", Logger.DEBUG);
+
         final Project project = e.getProject();
         if (project == null) {
             return;
@@ -36,7 +39,7 @@ public class FindViewByIdAction extends AnAction {
 
         PsiClass psiClass = PlatformUtils.getPsiClassInEditor(editor);
         if (psiClass == null) {
-            Messages.showErrorDialog("当前文件不是一个类文件！", "");
+            Logger.error("当前文件不是一个类文件！");
             return;
         }
 
