@@ -3,6 +3,11 @@ package utils;
 import org.apache.http.util.TextUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Created by Taylor on 17/5/10.
  */
@@ -49,5 +54,21 @@ public final class StringUtils {
             }
             return camelStrBuilder.toString();
         }
+    }
+
+    /**
+     * 提取所有圆括号中的字符串, 如果某个圆括号中无任何字符串（包括空白），则不提取
+     * @param targetText 目标提取字符串
+     * @return  各个圆括号中的字符串组成的列表
+     */
+    @NotNull
+    public static List<String> extractStringInParentheses(@NotNull String targetText) {
+        List<String> extractedList = new ArrayList<>();
+        Pattern pattern = Pattern.compile("(?<=\\()(.+?)(?=\\))");
+        Matcher matcher = pattern.matcher(targetText);
+        while (matcher.find()) {
+            extractedList.add(matcher.group());
+        }
+        return extractedList;
     }
 }

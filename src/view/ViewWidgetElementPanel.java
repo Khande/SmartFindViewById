@@ -32,6 +32,7 @@ public class ViewWidgetElementPanel extends JPanel {
         initChildrenComponents(element);
 
         setLayout(new GridLayout(1, 4, 10, 10));
+        // Add some margin between element panel
         setBorder(new EmptyBorder(Constants.Dimen.IN_GROUP_VERTICAL_GAP, 0, Constants.Dimen.IN_GROUP_VERTICAL_GAP, 0));
         add(mEnableGenerateThisIdCheckbox);
         add(mViewNameLabel);

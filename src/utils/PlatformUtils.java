@@ -10,10 +10,15 @@ import com.intellij.psi.util.PsiUtilBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 /**
  * Created by Taylor on 17/5/11.
  */
 public final class PlatformUtils {
+
+    private static final String METHOD_PARAMS_DELIMITER = ",";
+
     private PlatformUtils() {
     }
 
@@ -110,5 +115,14 @@ public final class PlatformUtils {
     }
 
 
+    @Nullable
+    public static String[] extractParamsFromMethodCall(@NotNull PsiMethodCallExpression methodCallExpression) {
+        String methodCallExpressionText = StringUtils.removeBlanksInString(methodCallExpression.getText());
+        List<String> stringList = StringUtils.extractStringInParentheses(methodCallExpressionText);
+        if (stringList.isEmpty()) {
+            return null;
+        }
 
+        return stringList.get(0).split(METHOD_PARAMS_DELIMITER);
+    }
 }

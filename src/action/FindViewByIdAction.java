@@ -40,22 +40,29 @@ public class FindViewByIdAction extends AnAction {
             return;
         }
 
-        SelectionModel model = editor.getSelectionModel();
-        String layoutFileName = model.getSelectedText();
-        if (TextUtils.isEmpty(layoutFileName)) {
-            layoutFileName = Messages.showInputDialog(project, "layout 文件名：（不需要输入 R.layout. 及文件后缀 .xml）",
-                    "未选中 layout 文件名，请输入layout 文件名", Messages.getInformationIcon());
-            if (TextUtils.isBlank(layoutFileName)) {
-                UIUtils.showPopupBalloon(editor, "未输入 layout 文件名", 5);
-                return;
-            }
-        }
 
-        layoutFileName = StringUtils.removeBlanksInString(layoutFileName);
+        String layoutFileName = AndroidUtils.getLayoutFileNameInActivity(psiClass);
+
+//        SelectionModel model = editor.getSelectionModel();
+//        String layoutFileName = model.getSelectedText();
+//        if (TextUtils.isEmpty(layoutFileName)) {
+//            layoutFileName = Messages.showInputDialog(project, "layout 文件名：（不需要输入 R.layout. 及文件后缀 .xml）",
+//                    "未选中 layout 文件名，请输入layout 文件名", Messages.getInformationIcon());
+//            if (TextUtils.isBlank(layoutFileName)) {
+//                UIUtils.showPopupBalloon(editor, "未输入 layout 文件名", 5);
+//                return;
+//            }
+//        }
+//
+//        layoutFileName = StringUtils.removeBlanksInString(layoutFileName);
+
+        if (TextUtils.isEmpty(layoutFileName)) {
+            return;
+        }
 
         XmlFile layoutXmlFile = AndroidUtils.getXmlFileByName(project, layoutFileName);
         if (layoutXmlFile == null) {
-            UIUtils.showPopupBalloon(editor, "未找到选中的布局文件", 5);
+            UIUtils.showPopupBalloon(editor, "不存在 " + layoutFileName + " 布局文件！", 5);
             return;
         }
 

@@ -10,7 +10,6 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import entity.ViewWidgetElement;
 import org.apache.http.util.TextUtils;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,6 +30,7 @@ public final class AndroidUtils {
     // 判断id正则
     public static final Pattern VIEW_ID_PATTERN = Pattern.compile("@\\+?(android:)?id/([^$]+)$", Pattern.CASE_INSENSITIVE);
     public static final String VIEW_ID_SUFFIX = "R.id.";
+    public static final String LAYOUT_RES_SUFFIX = "R.layout.";
 
     private static final String TAG_INCLUDE = "include";
     private static final String TAG_LAYOUT = "layout";
@@ -216,6 +216,7 @@ public final class AndroidUtils {
      * 判断当前打开的类文件是否是一个 Activity class
      * 通过判断是 android.app.Activity 类的直接子类或间接子类来确定，
      * 如继承了 AppCompatActivity, FragmentActivity 都是 Activity 的子类，因为 AppCompatActivity 等是 Activity 的间接子类.
+     *
      * @param psiClass current opened & displayed file's class
      * @return <code>true</code> means yes, <code>false</code> means no
      */
@@ -226,6 +227,52 @@ public final class AndroidUtils {
         return (activityClass != null && psiClass.isInheritor(activityClass, true));
     }
 
+
+    /**
+     * 如果当前类是一个 Activity 类，则在其 onCreate 方法的 setContentView 方法调用语句中获取当前 Activity 的布局资源文件名.
+     * 不考虑其他的一些在其他地方定义布局文件资源的类封装
+     *
+     * @param psiClass 指定的类
+     * @return 当前 Activity 的布局资源文件名
+     */
+    @NotNull
+    public static String getLayoutFileNameInActivity(@NotNull PsiClass psiClass) {
+        if (!isAnActivityClass(psiClass)) {
+            return "";
+        }
+
+        PsiMethod[] onCreateMethods = psiClass.findMethodsByName(METHOD_NAME_ON_CREATE, false);
+        if (onCreateMethods.length < 1) {
+            return "";
+        }
+
+        PsiMethod onCreateMethod = onCreateMethods[0];
+        PsiCodeBlock onCreateMethodBody = onCreateMethod.getBody();
+        if (onCreateMethodBody == null) {
+            return "";
+        }
+
+        String layoutFileName = "";
+
+        for (PsiStatement psiStatement : onCreateMethodBody.getStatements()) {
+            // 查找setContentView
+            PsiElement psiElement = psiStatement.getFirstChild();
+            if (psiElement instanceof PsiMethodCallExpression) {
+                PsiReferenceExpression methodExpression = ((PsiMethodCallExpression) psiElement).getMethodExpression();
+                if (methodExpression.getText().equals(METHOD_NAME_SET_CONTENT_VIEW)) {
+                    String[] methodCallParams = PlatformUtils.extractParamsFromMethodCall((PsiMethodCallExpression) psiElement);
+                    if (methodCallParams != null && methodCallParams.length > 0) {
+                        String fullLayoutFilePath = methodCallParams[0];
+                        Logger.info("fullLayoutFilePath: " + fullLayoutFilePath);
+                        layoutFileName = fullLayoutFilePath.replace(LAYOUT_RES_SUFFIX, "");
+                        break;
+                    }
+                }
+            }
+        }
+
+        return layoutFileName;
+    }
 
 
 

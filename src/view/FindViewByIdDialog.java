@@ -186,6 +186,7 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
                 Constants.Dimen.OUT_GROUP_VERTICAL_GAP, Constants.Dimen.RIGHT_INSET));
 
         mCheckAllViewWidgetsCheckBox.addActionListener(this);
+        mCheckAllViewWidgetsCheckBox.setBorder(new EmptyBorder(0, 0 ,0, 5));
         optionsPanel.add(mCheckAllViewWidgetsCheckBox);
 
         optionsPanel.add(mRootViewCheckBox);
