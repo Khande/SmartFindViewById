@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import utils.Constants;
 import utils.FindViewByIdCoder;
 import utils.PlatformUtils;
+import utils.StringUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -307,7 +308,7 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
      * @param rootViewName   rootView 变量名
      */
     private void generateFindViewById(final boolean isRootViewFind, @Nullable final String rootViewName) {
-        String validRootViewName = TextUtils.isBlank(rootViewName) ? ROOT_VIEW_NAME_DEFAULT : rootViewName.replace(" ", "");
+        String validRootViewName = TextUtils.isBlank(rootViewName) ? ROOT_VIEW_NAME_DEFAULT : StringUtils.removeBlanksInString(rootViewName);
         new FindViewByIdCoder(mEditor, mClass, mViewWidgetElements, isRootViewFind, validRootViewName)
                 .execute();
     }

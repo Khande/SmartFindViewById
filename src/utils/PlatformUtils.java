@@ -1,8 +1,11 @@
 package utils;
 
 import com.intellij.codeInsight.actions.ReformatCodeProcessor;
+import com.intellij.openapi.editor.CaretModel;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -130,7 +133,7 @@ public final class PlatformUtils {
     @Nullable
     public static PsiCodeBlock getSpecifiedMethodBody(@NotNull final PsiClass psiClass, @NotNull final String methodName) {
         PsiMethod[] methods = psiClass.findMethodsByName(methodName, false);
-        if (methodName.length() < 1) {
+        if (methods.length < 1) {
             return null;
         }
 
@@ -138,5 +141,21 @@ public final class PlatformUtils {
     }
 
 
+    /**
+     * 获取当前光标所在行的字符串（包含前导和末尾的所有字符）
+     * @param editor 当前编辑器
+     * @return 当前光标所在行的文本
+     */
+    @NotNull
+    static String getCaretLineText(@NotNull Editor editor) {
+        Document document = editor.getDocument();
+        CaretModel caretModel = editor.getCaretModel();
+        int caretModelOffset = caretModel.getOffset();
 
+        int lineNumber = document.getLineNumber(caretModelOffset);
+        int lineStartOffset = document.getLineStartOffset(lineNumber);
+        int lineEndOffset = document.getLineEndOffset(lineNumber);
+
+        return document.getText(new TextRange(lineStartOffset, lineEndOffset));
+    }
 }

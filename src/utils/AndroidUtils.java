@@ -1,6 +1,7 @@
 package utils;
 
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.SelectionModel;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.search.EverythingGlobalScope;
@@ -346,6 +347,35 @@ public final class AndroidUtils {
 
 
     @NotNull
+    private static String tryGetLayoutFileNameBySelectedText(@NotNull final Editor editor) {
+        SelectionModel selectionModel = editor.getSelectionModel();
+        String selectedText = selectionModel.getSelectedText();
+        if (TextUtils.isBlank(selectedText)) {
+            return "";
+        } else {
+            Project project = editor.getProject();
+            if (project == null) {
+                return "";
+            }
+            String layoutFileName = StringUtils.removeBlanksInString(selectedText);
+            XmlFile xmlFile = getXmlFileByName(project, layoutFileName);
+            if (xmlFile != null) {
+                return layoutFileName;
+            } else {
+                return "";
+            }
+        }
+    }
+
+
+    @NotNull
+    private static String tryGetLayoutFileNameInCaretLine(@NotNull final Editor editor) {
+        String currentLineText = PlatformUtils.getCaretLineText(editor);
+        return findLayoutFileNameInText(currentLineText);
+    }
+
+
+    @NotNull
     private static String findLayoutFileNameInText(@NotNull final String srcText) {
         String srcTextWithoutBlanks = StringUtils.removeBlanksInString(srcText);
         int index = srcTextWithoutBlanks.indexOf(LAYOUT_RES_SUFFIX);
@@ -373,7 +403,17 @@ public final class AndroidUtils {
             return "";
         }
 
-        String layoutFileName = getLayoutFileNameInActivity(psiClass);
+        String layoutFileName = tryGetLayoutFileNameBySelectedText(editor);
+        if (!layoutFileName.isEmpty()) {
+            return layoutFileName;
+        }
+
+        layoutFileName = tryGetLayoutFileNameInCaretLine(editor);
+        if (!layoutFileName.isEmpty()) {
+            return layoutFileName;
+        }
+
+        layoutFileName = getLayoutFileNameInActivity(psiClass);
         if (!layoutFileName.isEmpty()) {
             return layoutFileName;
         }
