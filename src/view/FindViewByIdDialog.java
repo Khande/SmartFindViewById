@@ -62,7 +62,7 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
         JPanel topLabelsPanel = createTopLabelsPanel();
         GridBagConstraints topLabelsGbc = new GridBagConstraints();
         // 使组件完全填满其显示区域
-        topLabelsGbc.fill = GridBagConstraints.BOTH;
+        topLabelsGbc.fill = GridBagConstraints.HORIZONTAL;
         // 设置组件水平所占用的格子数，如果为0，就说明该组件是该行的最后一个
         topLabelsGbc.gridwidth = 0;
         // 第几列
@@ -83,14 +83,14 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
         viewWidgetElementsGbc.gridy = 1;
         viewWidgetElementsGbc.weightx = 1;
         viewWidgetElementsGbc.weighty = 1;
-        mViewWidgetElementsScrollPanel.setBorder(new EmptyBorder(Constants.Dimen.OUT_GROUP_VERTICAL_GAP, Constants.Dimen.LEFT_INSET,
+        mViewWidgetElementsScrollPanel.setBorder(new EmptyBorder(0, Constants.Dimen.LEFT_INSET,
                 Constants.Dimen.OUT_GROUP_VERTICAL_GAP, Constants.Dimen.RIGHT_INSET));
         contentPane.add(mViewWidgetElementsScrollPanel, viewWidgetElementsGbc);
 
 
         JPanel optionsPanel = createOptionsPanel();
         GridBagConstraints optionsGbc = new GridBagConstraints();
-        optionsGbc.fill = GridBagConstraints.HORIZONTAL;
+        optionsGbc.fill = GridBagConstraints.BOTH;
         optionsGbc.gridwidth = 0;
         optionsGbc.gridx = 0;
         optionsGbc.gridy = 2;
@@ -101,11 +101,13 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
 
         JPanel bottomButtonsPanel = createBottomButtonsPanel();
         GridBagConstraints bottomButtonsGbc = new GridBagConstraints();
+        bottomButtonsGbc.fill = GridBagConstraints.VERTICAL;
         bottomButtonsGbc.anchor = GridBagConstraints.LINE_END;
         bottomButtonsGbc.gridwidth = 0;
         bottomButtonsGbc.gridx = 0; // 此处是整个 UI 对齐的关键
         bottomButtonsGbc.gridy = 3;
         bottomButtonsGbc.weightx = 1;
+        bottomButtonsGbc.weighty = 0;
         contentPane.add(bottomButtonsPanel, bottomButtonsGbc);
 
         setContentPane(contentPane);
@@ -228,7 +230,8 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
 
     private final JPanel mViewWidgetElementsPanel = new JPanel(new GridBagLayout());
     private final GridBagConstraints mViewWidgetElementConstraints = new GridBagConstraints();
-    private final JBScrollPane mViewWidgetElementsScrollPanel = new JBScrollPane(mViewWidgetElementsPanel);
+    private final JBScrollPane mViewWidgetElementsScrollPanel = new JBScrollPane(mViewWidgetElementsPanel,
+            JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JBScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
     private void refreshViewWidgetElementsPanel() {
         mViewWidgetElementsPanel.removeAll();
