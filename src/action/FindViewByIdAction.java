@@ -41,7 +41,7 @@ public class FindViewByIdAction extends AnAction {
         }
 
 
-        String layoutFileName = AndroidUtils.getLayoutFileNameInActivity(psiClass);
+        String layoutFileName = AndroidUtils.tryGetLayoutFileNameAutomatically(editor);
 
 //        SelectionModel model = editor.getSelectionModel();
 //        String layoutFileName = model.getSelectedText();

@@ -228,7 +228,7 @@ public class FindViewByIdCoder extends Simple {
 
 
     private void writeInitViewStatementIfNeeded() {
-        boolean isAnActivityClass = AndroidUtils.isAnActivityClass(mClass);
+        boolean isAnActivityClass = AndroidUtils.isActivityClass(mClass);
         Logger.warn("This class is not an Activity class");
         if (!isAnActivityClass) {
             return;

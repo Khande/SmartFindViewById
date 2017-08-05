@@ -25,22 +25,6 @@ import java.util.regex.Pattern;
 public class Util {
 
     /**
-     * 判断mClass是不是继承fragmentClass或者fragmentV4Class
-     *
-     * @param mProject
-     * @param mClass
-     * @return
-     */
-    public static boolean isExtendsFragmentOrFragmentV4(Project mProject, PsiClass mClass) {
-        // 根据类名查找类
-        PsiClass fragmentClass = JavaPsiFacade.getInstance(mProject).findClass("android.app.Fragment", new EverythingGlobalScope(mProject));
-        PsiClass fragmentV4Class = JavaPsiFacade.getInstance(mProject).findClass("android.support.v4.app.Fragment", new EverythingGlobalScope(mProject));
-        return (fragmentClass != null && mClass.isInheritor(fragmentClass, true))
-                || (fragmentV4Class != null && mClass.isInheritor(fragmentV4Class, true))
-                || mClass.getName().contains("Fragment");
-    }
-
-    /**
      * 创建onCreate方法
      *
      * @param mSelectedText

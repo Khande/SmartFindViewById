@@ -1,5 +1,6 @@
 package utils;
 
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.search.EverythingGlobalScope;
@@ -8,6 +9,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
+import com.sun.tools.javac.tree.JCTree;
 import entity.ViewWidgetElement;
 import org.apache.http.util.TextUtils;
 import org.jetbrains.annotations.NotNull;
@@ -24,9 +26,16 @@ public final class AndroidUtils {
 
     public static final String INTERFACE_NAME_VIEW_ON_CLICK_LISTENER = "View.OnClickListener";
     public static final String VIEW_ON_CLICK_LISTENER_FQ_CLASS_PATH = "android.view.View.OnClickListener";
+    public static final String ANDROID_APP_ACTIVITY_FQ_PATH = "android.app.Activity";
+    public static final String ANDROID_APP_FRAGMENT_FQ_PATH = "android.app.Fragment";
+    public static final String ANDROID_SUPPORT_V4_APP_FRAGMENT_FQ_PATH = "android.support.v4.app.Fragment";
+
     public static final String METHOD_NAME_ON_CLICK = "onClick";
     public static final String METHOD_NAME_ON_CREATE = "onCreate";
+    public static final String METHOD_NAME_ON_CREATE_VIEW = "onCreateView";
     public static final String METHOD_NAME_SET_CONTENT_VIEW = "setContentView";
+    public static final String METHOD_NAME_ON_CREATE_VIEW_HOLDER = "onCreateViewHolder";
+
     // 判断id正则
     public static final Pattern VIEW_ID_PATTERN = Pattern.compile("@\\+?(android:)?id/([^$]+)$", Pattern.CASE_INSENSITIVE);
     public static final String VIEW_ID_SUFFIX = "R.id.";
@@ -220,10 +229,10 @@ public final class AndroidUtils {
      * @param psiClass current opened & displayed file's class
      * @return <code>true</code> means yes, <code>false</code> means no
      */
-    public static boolean isAnActivityClass(@NotNull final PsiClass psiClass) {
+    public static boolean isActivityClass(@NotNull final PsiClass psiClass) {
         Project project = psiClass.getProject();
         EverythingGlobalScope globalScope = new EverythingGlobalScope(project);
-        PsiClass activityClass = JavaPsiFacade.getInstance(project).findClass("android.app.Activity", globalScope);
+        PsiClass activityClass = JavaPsiFacade.getInstance(project).findClass(ANDROID_APP_ACTIVITY_FQ_PATH, globalScope);
         return (activityClass != null && psiClass.isInheritor(activityClass, true));
     }
 
@@ -236,8 +245,8 @@ public final class AndroidUtils {
      * @return 当前 Activity 的布局资源文件名
      */
     @NotNull
-    public static String getLayoutFileNameInActivity(@NotNull PsiClass psiClass) {
-        if (!isAnActivityClass(psiClass)) {
+    private static String getLayoutFileNameInActivity(@NotNull PsiClass psiClass) {
+        if (!isActivityClass(psiClass)) {
             return "";
         }
 
@@ -270,6 +279,141 @@ public final class AndroidUtils {
                 }
             }
         }
+
+        return layoutFileName;
+    }
+
+
+    /**
+     * 判断指定 class 是不是直接或间接继承 android.app.Fragment 或者 android.support.v4.app.Fragment 类
+     *
+     * @param psiClass 指定的 class
+     * @return <code>true</code> means yes, <code>false</code> means no
+     */
+    public static boolean isFragmentClass(@NotNull final PsiClass psiClass) {
+        Project project = psiClass.getProject();
+        EverythingGlobalScope globalScope = new EverythingGlobalScope(project);
+        PsiClass fragmentClass = JavaPsiFacade.getInstance(project).findClass(ANDROID_APP_FRAGMENT_FQ_PATH, globalScope);
+        PsiClass fragmentV4Class = JavaPsiFacade.getInstance(project).findClass(ANDROID_SUPPORT_V4_APP_FRAGMENT_FQ_PATH, globalScope);
+        return (fragmentClass != null && psiClass.isInheritor(fragmentClass, true))
+                || (fragmentV4Class != null && psiClass.isInheritor(fragmentV4Class, true));
+    }
+
+
+    private static String getLayoutFileNameInFragment(@NotNull final PsiClass psiClass) {
+        if (!isFragmentClass(psiClass)) {
+            return "";
+        }
+
+        PsiMethod[] onCreateViewMethods = psiClass.findMethodsByName(METHOD_NAME_ON_CREATE_VIEW, false);
+        if (onCreateViewMethods.length < 1) {
+            return "";
+        }
+
+        PsiCodeBlock onCreateViewMethodBody = onCreateViewMethods[0].getBody();
+        if (onCreateViewMethodBody == null) {
+            return "";
+        }
+
+        PsiStatement[] onCreateViewMethodBodyStatements = onCreateViewMethodBody.getStatements();
+
+        String layoutFileName = "";
+
+        for (PsiStatement statement : onCreateViewMethodBodyStatements) {
+            if (!layoutFileName.isEmpty()) {
+                break;
+            }
+            String statementText = statement.getText();
+            if (statementText.contains(LAYOUT_RES_SUFFIX)) {
+                List<String> extractStringInParentheses = StringUtils.extractStringInParentheses(statementText);
+                for (String s : extractStringInParentheses) {
+                    if (!layoutFileName.isEmpty()) {
+                        break;
+                    }
+                    if (s.contains(LAYOUT_RES_SUFFIX)) {
+                        String[] params = s.split(PlatformUtils.METHOD_PARAMS_DELIMITER);
+                        for (String param : params) {
+                            if (param.contains(LAYOUT_RES_SUFFIX)) {
+                                layoutFileName = StringUtils.removeBlanksInString(param).replace(LAYOUT_RES_SUFFIX, "");
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return layoutFileName;
+    }
+
+
+
+    @NotNull
+    private static String getLayoutFileNameInRecyclerViewAdapter(@NotNull final PsiClass psiClass) {
+        PsiCodeBlock onCreateViewHolderMethodBody = PlatformUtils.getSpecifiedMethodBody(psiClass, METHOD_NAME_ON_CREATE_VIEW_HOLDER);
+        if (onCreateViewHolderMethodBody == null) {
+            return "";
+        }
+
+        String layoutFileName = "";
+
+        PsiStatement[] onCreateViewHolderMethodBodyStatements = onCreateViewHolderMethodBody.getStatements();
+        for (PsiStatement statement : onCreateViewHolderMethodBodyStatements) {
+            if (!layoutFileName.isEmpty()) {
+                break;
+            }
+            String statementText = statement.getText();
+            layoutFileName = findLayoutFileNameInText(statementText);
+        }
+
+        return layoutFileName;
+    }
+
+
+    @NotNull
+    private static String findLayoutFileNameInText(@NotNull final String srcText) {
+        String srcTextWithoutBlanks = StringUtils.removeBlanksInString(srcText);
+        int index = srcTextWithoutBlanks.indexOf(LAYOUT_RES_SUFFIX);
+        if (index < 0) {
+            return "";
+        }
+
+        StringBuilder layoutFileNameBuilder = new StringBuilder("");
+        char[] chars = srcTextWithoutBlanks.substring(index + LAYOUT_RES_SUFFIX.length()).toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            if (chars[i] == ',' || chars[i] == ')') {
+                break;
+            }
+            layoutFileNameBuilder.append(chars[i]);
+        }
+
+        return layoutFileNameBuilder.toString();
+    }
+
+
+    @NotNull
+    public static String tryGetLayoutFileNameAutomatically(@NotNull final Editor editor) {
+        PsiClass psiClass = PlatformUtils.getPsiClassInEditor(editor);
+        if (psiClass == null) {
+            return "";
+        }
+
+        String layoutFileName = getLayoutFileNameInActivity(psiClass);
+        if (!layoutFileName.isEmpty()) {
+            return layoutFileName;
+        }
+
+
+        layoutFileName = getLayoutFileNameInFragment(psiClass);
+        if (!layoutFileName.isEmpty()) {
+            return layoutFileName;
+        }
+
+        layoutFileName = getLayoutFileNameInRecyclerViewAdapter(psiClass);
+        if (!layoutFileName.isEmpty()) {
+            return layoutFileName;
+        }
+
 
         return layoutFileName;
     }

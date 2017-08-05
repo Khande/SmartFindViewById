@@ -17,7 +17,7 @@ import java.util.List;
  */
 public final class PlatformUtils {
 
-    private static final String METHOD_PARAMS_DELIMITER = ",";
+    public static final String METHOD_PARAMS_DELIMITER = ",";
 
     private PlatformUtils() {
     }
@@ -125,4 +125,18 @@ public final class PlatformUtils {
 
         return stringList.get(0).split(METHOD_PARAMS_DELIMITER);
     }
+
+
+    @Nullable
+    public static PsiCodeBlock getSpecifiedMethodBody(@NotNull final PsiClass psiClass, @NotNull final String methodName) {
+        PsiMethod[] methods = psiClass.findMethodsByName(methodName, false);
+        if (methodName.length() < 1) {
+            return null;
+        }
+
+        return methods[0].getBody();
+    }
+
+
+
 }
