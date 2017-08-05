@@ -9,7 +9,6 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
-import com.sun.tools.javac.tree.JCTree;
 import entity.ViewWidgetElement;
 import org.apache.http.util.TextUtils;
 import org.jetbrains.annotations.NotNull;
@@ -250,13 +249,7 @@ public final class AndroidUtils {
             return "";
         }
 
-        PsiMethod[] onCreateMethods = psiClass.findMethodsByName(METHOD_NAME_ON_CREATE, false);
-        if (onCreateMethods.length < 1) {
-            return "";
-        }
-
-        PsiMethod onCreateMethod = onCreateMethods[0];
-        PsiCodeBlock onCreateMethodBody = onCreateMethod.getBody();
+        PsiCodeBlock onCreateMethodBody = PlatformUtils.getSpecifiedMethodBody(psiClass, METHOD_NAME_ON_CREATE);
         if (onCreateMethodBody == null) {
             return "";
         }
@@ -264,6 +257,9 @@ public final class AndroidUtils {
         String layoutFileName = "";
 
         for (PsiStatement psiStatement : onCreateMethodBody.getStatements()) {
+            if (!layoutFileName.isEmpty()) {
+                break;
+            }
             // 查找setContentView
             PsiElement psiElement = psiStatement.getFirstChild();
             if (psiElement instanceof PsiMethodCallExpression) {
@@ -305,12 +301,7 @@ public final class AndroidUtils {
             return "";
         }
 
-        PsiMethod[] onCreateViewMethods = psiClass.findMethodsByName(METHOD_NAME_ON_CREATE_VIEW, false);
-        if (onCreateViewMethods.length < 1) {
-            return "";
-        }
-
-        PsiCodeBlock onCreateViewMethodBody = onCreateViewMethods[0].getBody();
+        PsiCodeBlock onCreateViewMethodBody = PlatformUtils.getSpecifiedMethodBody(psiClass, METHOD_NAME_ON_CREATE_VIEW);
         if (onCreateViewMethodBody == null) {
             return "";
         }
@@ -324,23 +315,7 @@ public final class AndroidUtils {
                 break;
             }
             String statementText = statement.getText();
-            if (statementText.contains(LAYOUT_RES_SUFFIX)) {
-                List<String> extractStringInParentheses = StringUtils.extractStringInParentheses(statementText);
-                for (String s : extractStringInParentheses) {
-                    if (!layoutFileName.isEmpty()) {
-                        break;
-                    }
-                    if (s.contains(LAYOUT_RES_SUFFIX)) {
-                        String[] params = s.split(PlatformUtils.METHOD_PARAMS_DELIMITER);
-                        for (String param : params) {
-                            if (param.contains(LAYOUT_RES_SUFFIX)) {
-                                layoutFileName = StringUtils.removeBlanksInString(param).replace(LAYOUT_RES_SUFFIX, "");
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+            layoutFileName = findLayoutFileNameInText(statementText);
         }
 
         return layoutFileName;

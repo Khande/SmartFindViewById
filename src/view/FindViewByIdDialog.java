@@ -1,15 +1,16 @@
 package view;
 
 import com.intellij.openapi.editor.Editor;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiStatement;
 import com.intellij.ui.components.JBScrollPane;
 import entity.ViewWidgetElement;
 import org.apache.http.util.TextUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import utils.Constants;
-import utils.PlatformUtils;
 import utils.FindViewByIdCoder;
+import utils.PlatformUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
