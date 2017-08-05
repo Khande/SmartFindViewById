@@ -8,10 +8,7 @@ import entity.ViewWidgetElement;
 import org.apache.http.util.TextUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import utils.Constants;
-import utils.FindViewByIdCoder;
-import utils.PlatformUtils;
-import utils.StringUtils;
+import utils.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -191,6 +188,7 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
                 Constants.Dimen.OUT_GROUP_VERTICAL_GAP, Constants.Dimen.RIGHT_INSET));
 
         mCheckAllViewWidgetsCheckBox.addActionListener(this);
+        mRootViewCheckBox.setSelected(!AndroidUtils.isActivityClass(mClass));
         mCheckAllViewWidgetsCheckBox.setBorder(new EmptyBorder(0, 0 ,0, 5));
         optionsPanel.add(mCheckAllViewWidgetsCheckBox);
 
