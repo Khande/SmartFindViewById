@@ -134,24 +134,22 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
             return;
         }
 
-        boolean isFindViewByIdCodeExist = false;
         for (ViewWidgetElement element : mViewWidgetElements) {
             boolean isElementFindViewByIdCodeExist = false;
             for (PsiStatement statement : statements) {
                 if (PlatformUtils.isMethodInvoked(statement, "findViewById", element.getFullViewId())) {
                     isElementFindViewByIdCodeExist = true;
-                    isFindViewByIdCodeExist = true;
                     break;
                 }
             }
 
             if (isElementFindViewByIdCodeExist) {
                 element.setNeedGenerate(false);
-                mNeedGenerateViewWidgetElementSize --;
+                mNeedGenerateViewWidgetElementSize--;
             }
 
         }
-        mCheckAllViewWidgetsCheckBox.setSelected(!isFindViewByIdCodeExist);
+        mCheckAllViewWidgetsCheckBox.setSelected(mNeedGenerateViewWidgetElementSize == mViewWidgetElements.size());
     }
 
 
@@ -291,8 +289,10 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
                 closeDialog();
                 break;
             case CMD_CHECK_ALL_VIEW_WIDGETS:
+                boolean needGenerate = mCheckAllViewWidgetsCheckBox.isSelected();
+                mNeedGenerateViewWidgetElementSize = needGenerate ? mViewWidgetElements.size() : 0;
                 for (ViewWidgetElement element : mViewWidgetElements) {
-                    element.setNeedGenerate(mCheckAllViewWidgetsCheckBox.isSelected());
+                    element.setNeedGenerate(needGenerate);
                 }
                 refreshViewWidgetElementsPanel();
                 break;
