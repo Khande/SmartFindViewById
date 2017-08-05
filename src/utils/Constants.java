@@ -1,7 +1,8 @@
 package utils;
 
 /**
- * Created by Khande on 17/8/4.
+ * Created by Khande on 17/8/5.
+ * email: komisha@163.com
  */
 public final class Constants {
     private Constants() {

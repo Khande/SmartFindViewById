@@ -20,10 +20,11 @@ import java.awt.event.*;
 import java.util.List;
 
 /**
- * Created by khande on 2017/05/11.
+ * Created by Khande on 17/8/5.
+ * email: komisha@163.com
  */
 public class FindViewByIdDialog extends JDialog implements ActionListener {
-    private static final String DIALOG_TITLE = "FindViewByIdDialog";
+    private static final String DIALOG_TITLE = "SmartFindViewById";
     private static final String CMD_CHECK_ALL_VIEW_WIDGETS = "全选";
     private static final String CMD_CHECK_ROOT_VIEW = "RootView";
     private static final String CMD_CONFIRM = "确定";
@@ -114,16 +115,16 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
         setModal(true);
         getRootPane().setDefaultButton(mConfirmButton);
 
-        // call onCancel() when cross is clicked
+        // call closeDialog() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                cancelDialog();
+                closeDialog();
             }
         });
 
-        // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(e -> cancelDialog(),
+        // call closeDialog() on ESCAPE
+        contentPane.registerKeyboardAction(e -> closeDialog(),
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
     }
@@ -275,10 +276,8 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
         setVisible(true);
     }
 
-    /**
-     * 关闭dialog
-     */
-    public void cancelDialog() {
+
+    public void closeDialog() {
         setVisible(false);
         dispose();
     }
@@ -287,11 +286,11 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         switch (e.getActionCommand()) {
             case CMD_CONFIRM:
-                cancelDialog();
+                closeDialog();
                 generateFindViewById(mRootViewCheckBox.isSelected(), mRootViewNameTextField.getText());
                 break;
             case CMD_CANCEL:
-                cancelDialog();
+                closeDialog();
                 break;
             case CMD_CHECK_ALL_VIEW_WIDGETS:
                 for (ViewWidgetElement element : mViewWidgetElements) {

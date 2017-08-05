@@ -9,6 +9,9 @@ import utils.StringUtils;
 import java.util.regex.Matcher;
 
 /**
+ * Created by Khande on 17/8/5.
+ * email: komisha@163.com
+ *
  * layout xml 文件中 view Widget 元素
  */
 public class ViewWidgetElement {

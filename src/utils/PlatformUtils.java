@@ -16,7 +16,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
- * Created by Taylor on 17/5/11.
+ * Created by Khande on 17/8/5.
+ * email: komisha@163.com
  */
 public final class PlatformUtils {
 

@@ -4,7 +4,8 @@ import com.intellij.notification.*;
 
 
 /**
- * Created by Khande on 17/6/6.
+ * Created by Khande on 17/8/5.
+ * email: komisha@163.com
  */
 public class Logger {
     private static String sName;

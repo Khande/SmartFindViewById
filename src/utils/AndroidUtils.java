@@ -18,9 +18,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 /**
- * Created by Taylor on 17/5/10.
+ * Created by Khande on 17/8/5.
+ * email: komisha@163.com
  */
 public final class AndroidUtils {
 

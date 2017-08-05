@@ -1,8 +1,8 @@
 <idea-plugin>
-    <id>com.khande.plugin.findViewById</id>
-    <name>GenerateFindViewById</name>
-    <version>1.0</version>
-    <vendor email="komisha@163.com" url="https://github.com/Khande/GenerateFindViewById">GitHub</vendor>
+    <id>com.khande.idea.plugin.SmartFindViewById</id>
+    <name>SmartFindViewById</name>
+    <version>1.2</version>
+    <vendor email="komisha@163.com" url="https://github.com/Khande/SmartFindViewById">SmartFindViewById</vendor>
 
     <description><![CDATA[
     可输入布局字段，可选中布局文件字段，自动生成有id控件相应的代码。<br/>
@@ -34,11 +34,12 @@
 
     <actions>
         <!-- Add your actions here -->
-        <action id="GenerateFindViewByIdAction" class="action.FindViewByIdAction" text="FindViewById"
-                description="GenerateFindViewByIdAction">
+        <action id="SmartFindViewByIdAction" class="action.SmartFindViewByIdAction" text="SmartFindViewById"
+                description="SmartFindViewByIdAction">
             <add-to-group group-id="CodeMenu" anchor="last"/>
             <add-to-group group-id="GenerateGroup" anchor="first"/>
-            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt E"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt S"/>
         </action>
     </actions>
 

@@ -16,7 +16,12 @@ import view.FindViewByIdDialog;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FindViewByIdAction extends AnAction {
+/**
+ * Created by Khande on 17/8/5.
+ * email: komisha@163.com
+ */
+
+public class SmartFindViewByIdAction extends AnAction {
     private FindViewByIdDialog mFindViewByIdDialog;
 
     @Override
@@ -67,7 +72,7 @@ public class FindViewByIdAction extends AnAction {
         AndroidUtils.getAllViewIdsFromLayoutFile(layoutXmlFile, viewWidgetElements);
         if (!viewWidgetElements.isEmpty()) {
             if (mFindViewByIdDialog != null && mFindViewByIdDialog.isShowing()) {
-                mFindViewByIdDialog.cancelDialog();
+                mFindViewByIdDialog.closeDialog();
             }
             mFindViewByIdDialog = new FindViewByIdDialog(editor, psiClass, viewWidgetElements);
             mFindViewByIdDialog.showDialog();
