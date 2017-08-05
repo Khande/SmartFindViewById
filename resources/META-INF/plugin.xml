@@ -5,27 +5,29 @@
     <vendor email="komisha@163.com" url="https://github.com/Khande/SmartFindViewById">SmartFindViewById</vendor>
 
     <description><![CDATA[
-    可输入布局字段，可选中布局文件字段，自动生成有id控件相应的代码。<br/>
-    Can input, can be selected to auto generator findViewById code in Activity or etc.<br/>
+    该插件可以依次通过
+    <ol>
+    <li>选中布局文件名，如选中代码段 setContentView（R.layout.activity_main) 中的 activity_main</li>
+    <li>检测当前光标所在行是否包含布局文件名（通过 R.layout. 前缀判断）</li>
+    <li>Activity setContentView(R.layout.xxx) 方法布局文件参数</li>
+    <li>Fragment(包括 support_v4 fragment) 中 onCreateView 方法中 inflate(R.layout.xxx... 布局参数</li>
+    <li>RecyclerViewAdapter 中 onCreateViewHolder 方法中 inflate(R.layout.xxx... 布局参数</li>
+    <li>弹输入框提示手动输入</li>
+    </ol>
+    来逐一尝试获取目标布局文件名，优先级从高到低，一旦有一个方法获取到了有效的布局文件名，
+    就会展示对应布局文件的所有拥有 id 的 View 控件，然后可以选择生成对应的 findViewById 和 onClick 点击事件代码。<br>
+    目前还支持展示和生成 include 布局下的 View 控件和支持 rootView.findViewById.<br>
     ]]></description>
 
-    <change-notes><![CDATA[
-        1.0 支持Activity和Fragment，<br/>
-        添加可选生成的字段，可编辑变量名，可选择是否LayoutInflater类型，<br/>
-        添加快捷键Ctrl+Alt+E，text、hint的值添加到字段注释，添加LayoutInflater生成，<br/>
-        添加OnClick生成代码。
-    ]]>
-    </change-notes>
+    <change-notes>首次发布，多多指教！(Initial release of the plugin.)</change-notes>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
     <idea-version since-build="141.0"/>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
-    <!-- uncomment to enable plugin in all products
+    <!-- uncomment to enable plugin in all products-->
     <depends>com.intellij.modules.lang</depends>
-    <depends>com.intellij.modules.androidstudio/depends>
-    -->
 
     <!--http://www.jetbrains.org/intellij/sdk/docs/basics/plugin_structure/plugin_extensions_and_extension_points.html-->
     <extensions defaultExtensionNs="com.intellij">
