@@ -13,8 +13,8 @@ public final class StringResourceBundle {
 
     private static final String STRING_RESOURCE_BUNDLE_BASE_NAME = "StringsBundle";
 
-//    private final static ResourceBundle STRING_RESOURCE_BUNDLE = ResourceBundle.getBundle(STRING_RESOURCE_BUNDLE_BASE_NAME, Locale.getDefault());
-    private final static ResourceBundle STRING_RESOURCE_BUNDLE = ResourceBundle.getBundle(STRING_RESOURCE_BUNDLE_BASE_NAME, new Locale("en", "US"));
+    private final static ResourceBundle STRING_RESOURCE_BUNDLE = ResourceBundle.getBundle(STRING_RESOURCE_BUNDLE_BASE_NAME, Locale.getDefault());
+//    private final static ResourceBundle STRING_RESOURCE_BUNDLE = ResourceBundle.getBundle(STRING_RESOURCE_BUNDLE_BASE_NAME, new Locale("en", "US"));
 
     private StringResourceBundle() {
         //no instance
