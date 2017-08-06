@@ -269,7 +269,6 @@ public final class AndroidUtils {
                     String[] methodCallParams = PlatformUtils.extractParamsFromMethodCall((PsiMethodCallExpression) psiElement);
                     if (methodCallParams != null && methodCallParams.length > 0) {
                         String fullLayoutFilePath = methodCallParams[0];
-                        Logger.info("fullLayoutFilePath: " + fullLayoutFilePath);
                         layoutFileName = fullLayoutFilePath.replace(LAYOUT_RES_SUFFIX, "");
                         break;
                     }

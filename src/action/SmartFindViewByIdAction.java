@@ -26,7 +26,7 @@ public class SmartFindViewByIdAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-        Logger.init("FindViewById", Logger.DEBUG);
+        Logger.init(StringResourceBundle.getStringByKey("plugin_name"), Logger.DEBUG);
 
         final Project project = e.getProject();
         if (project == null) {
@@ -40,7 +40,7 @@ public class SmartFindViewByIdAction extends AnAction {
 
         PsiClass psiClass = PlatformUtils.getPsiClassInEditor(editor);
         if (psiClass == null) {
-            Logger.error("当前文件不是一个类文件！");
+            Logger.error(StringResourceBundle.getStringByKey("caret_not_in_class"));
             return;
         }
 
@@ -48,10 +48,10 @@ public class SmartFindViewByIdAction extends AnAction {
         String layoutFileName = AndroidUtils.tryGetLayoutFileNameAutomatically(editor);
 
         if (layoutFileName.isEmpty()) {
-            layoutFileName = Messages.showInputDialog(project, "layout 文件名：（不需要输入 R.layout. 及文件后缀 .xml）",
-                    "未选中 layout 文件名，请输入layout 文件名", Messages.getInformationIcon());
+            layoutFileName = Messages.showInputDialog(project, StringResourceBundle.getStringByKey("msg_input_layout_file_name"),
+                    StringResourceBundle.getStringByKey("title_input_layout_file_name_dialog"), Messages.getInformationIcon());
             if (TextUtils.isBlank(layoutFileName)) {
-                String fileNameInputError = "未输入 layout 文件名";
+                String fileNameInputError = StringResourceBundle.getStringByKey("error_input_layout_file_name");
                 Logger.error(fileNameInputError);
                 UIUtils.showPopupBalloon(editor, fileNameInputError, 5);
                 return;
@@ -62,7 +62,8 @@ public class SmartFindViewByIdAction extends AnAction {
 
         XmlFile layoutXmlFile = AndroidUtils.getXmlFileByName(project, layoutFileName);
         if (layoutXmlFile == null) {
-            String fileNotExistError = "不存在名为 " + layoutFileName + " 布局文件！";
+            String errorLayoutFileNotExistFormat = StringResourceBundle.getStringByKey("error_layout_file_not_exist");
+            String fileNotExistError = String.format(errorLayoutFileNotExistFormat, layoutFileName);
             Logger.error(fileNotExistError);
             UIUtils.showPopupBalloon(editor, fileNotExistError, 5);
             return;
@@ -77,7 +78,8 @@ public class SmartFindViewByIdAction extends AnAction {
             mFindViewByIdDialog = new FindViewByIdDialog(editor, psiClass, viewWidgetElements);
             mFindViewByIdDialog.showDialog();
         } else {
-            String androidViewIsNotFoundError = "未找到任何带 id 的 Android View.";
+            String androidViewIsNotFoundError = String.format(
+                    StringResourceBundle.getStringByKey("error_android_id_not_found"), layoutFileName);
             Logger.error(androidViewIsNotFoundError);
             UIUtils.showPopupBalloon(editor, androidViewIsNotFoundError, 5);
         }

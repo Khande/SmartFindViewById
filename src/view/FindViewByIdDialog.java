@@ -21,11 +21,11 @@ import java.util.List;
  * email: komisha@163.com
  */
 public class FindViewByIdDialog extends JDialog implements ActionListener {
-    private static final String DIALOG_TITLE = "SmartFindViewById";
-    private static final String CMD_CHECK_ALL_VIEW_WIDGETS = "全选";
-    private static final String CMD_CHECK_ROOT_VIEW = "RootView";
-    private static final String CMD_CONFIRM = "确定";
-    private static final String CMD_CANCEL = "取消";
+    private static final String DIALOG_TITLE = StringResourceBundle.getStringByKey("plugin_name");
+    private static final String CMD_CHECK_ALL_VIEW_WIDGETS = StringResourceBundle.getStringByKey("label_check_all_views");
+    private static final String CMD_CHECK_ROOT_VIEW = StringResourceBundle.getStringByKey("label_check_root_view");
+    private static final String CMD_CONFIRM = StringResourceBundle.getStringByKey("txt_button_confirm");
+    private static final String CMD_CANCEL = StringResourceBundle.getStringByKey("txt_button_cancel");
     private static final String ROOT_VIEW_NAME_DEFAULT = "itemView";
 
     private Editor mEditor;
@@ -158,17 +158,17 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
         topLabelsPanel.setBorder(new EmptyBorder(Constants.Dimen.IN_GROUP_VERTICAL_GAP, Constants.Dimen.LEFT_INSET,
                 Constants.Dimen.OUT_GROUP_VERTICAL_GAP, Constants.Dimen.RIGHT_INSET));
 
-        JLabel viewIdLabel = new JLabel("View Id");
+        JLabel viewIdLabel = new JLabel(StringResourceBundle.getStringByKey("label_view_id"));
         viewIdLabel.setBorder(new EmptyBorder(0, Constants.Dimen.LEFT_INSET, 0, 0));
         viewIdLabel.setHorizontalAlignment(JLabel.LEFT);
 
-        JLabel viewNameLabel = new JLabel("View 类型");
+        JLabel viewNameLabel = new JLabel(StringResourceBundle.getStringByKey("label_view_name"));
         viewNameLabel.setHorizontalAlignment(JLabel.LEFT);
 
-        JLabel onClickLabel = new JLabel("OnClick");
+        JLabel onClickLabel = new JLabel(StringResourceBundle.getStringByKey("label_view_on_click"));
         onClickLabel.setHorizontalAlignment(JLabel.LEFT);
 
-        JLabel viewFieldNameLabel = new JLabel("View成员变量名");
+        JLabel viewFieldNameLabel = new JLabel(StringResourceBundle.getStringByKey("label_view_field_name"));
         viewFieldNameLabel.setHorizontalAlignment(JLabel.LEFT);
 
         topLabelsPanel.add(viewIdLabel);
@@ -280,24 +280,19 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        switch (e.getActionCommand()) {
-            case CMD_CONFIRM:
-                closeDialog();
-                generateFindViewById(mRootViewCheckBox.isSelected(), mRootViewNameTextField.getText());
-                break;
-            case CMD_CANCEL:
-                closeDialog();
-                break;
-            case CMD_CHECK_ALL_VIEW_WIDGETS:
-                boolean needGenerate = mCheckAllViewWidgetsCheckBox.isSelected();
-                mNeedGenerateViewWidgetElementSize = needGenerate ? mViewWidgetElements.size() : 0;
-                for (ViewWidgetElement element : mViewWidgetElements) {
-                    element.setNeedGenerate(needGenerate);
-                }
-                refreshViewWidgetElementsPanel();
-                break;
-            default:
-                break;
+        String action = e.getActionCommand();
+        if (CMD_CONFIRM.equals(action)) {
+            closeDialog();
+            generateFindViewById(mRootViewCheckBox.isSelected(), mRootViewNameTextField.getText());
+        } else if (CMD_CANCEL.equals(action)) {
+            closeDialog();
+        } else if (CMD_CHECK_ALL_VIEW_WIDGETS.equals(action)) {
+            boolean needGenerate = mCheckAllViewWidgetsCheckBox.isSelected();
+            mNeedGenerateViewWidgetElementSize = needGenerate ? mViewWidgetElements.size() : 0;
+            for (ViewWidgetElement element : mViewWidgetElements) {
+                element.setNeedGenerate(needGenerate);
+            }
+            refreshViewWidgetElementsPanel();
         }
     }
 

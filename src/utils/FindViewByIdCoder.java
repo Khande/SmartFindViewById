@@ -65,7 +65,7 @@ public class FindViewByIdCoder extends Simple {
             return;
         }
         PlatformUtils.prettifyJavaCode(mClass);
-        UIUtils.showPopupBalloon(mEditor, "生成成功", 5);
+        UIUtils.showPopupBalloon(mEditor, StringResourceBundle.getStringByKey("msg_generate_code_success"), 5);
     }
 
 
@@ -233,7 +233,6 @@ public class FindViewByIdCoder extends Simple {
 
     private void writeInitViewStatementIfNeeded() {
         boolean isAnActivityClass = AndroidUtils.isActivityClass(mClass);
-        Logger.warn("This class is not an Activity class");
         if (!isAnActivityClass) {
             return;
         }
