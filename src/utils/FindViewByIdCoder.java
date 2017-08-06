@@ -224,6 +224,8 @@ public class FindViewByIdCoder extends Simple {
                 onClickMethodBuilder.append("\t\t\t\t//TODO \n");
                 onClickMethodBuilder.append("break;\n");
             }
+            onClickMethodBuilder.append("default:\n");
+            onClickMethodBuilder.append("break;\n");
             onClickMethodBuilder.append("}\n");
             onClickMethodBuilder.append("}\n");
             mClass.add(mElementFactory.createMethodFromText(onClickMethodBuilder.toString(), mClass));
