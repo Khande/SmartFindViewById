@@ -1,7 +1,12 @@
 # SmartFindViewById
 
+该项目派生于早期的 [wangzailfm/GenerateFindViewById](https://github.com/wangzailfm/GenerateFindViewById), <br>
+本项目基本上重构了原项目的所有代码，使得在一定程度上可以更方便地进行后期扩展。并在原项目基础上新增了智能查找布局文件，优化了展示界面，增加了 **I18N** 国际化支持等功能。<br>
+同时也编写了多个可以在 idea plugin 项目中重用的 utils 方法。<br>
+在此也向原项目作者表示感谢。
+
 ## 演示
-![演示](http://img.blog.csdn.net/20161122145239231)
+![演示]()
 
 ## 安装
 - 方法 1. 首先下载该项目中的 `SmartFindViewById.jar` 包，然后打开 Android Studio `Preferences` 菜单中的 `Plugins`，点击 `Install plugin from disk...`
