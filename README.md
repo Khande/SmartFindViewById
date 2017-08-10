@@ -1,8 +1,8 @@
 # SmartFindViewById
 
-该项目派生于早期的 [wangzailfm/GenerateFindViewById](https://github.com/wangzailfm/GenerateFindViewById), <br>
-本项目基本上重构了原项目的所有代码，使得在一定程度上可以更方便地进行后期扩展。并在原项目基础上新增了智能查找布局文件，优化了展示界面，增加了 **I18N** 国际化支持等功能。<br>
-同时也编写了多个可以在 idea plugin 项目中重用的 utils 方法。<br>
+该项目派生于早期的 [wangzailfm/GenerateFindViewById](https://github.com/wangzailfm/GenerateFindViewById), <br/>
+本项目基本上重构了原项目的所有代码，使得在一定程度上可以更方便地进行后期扩展。并在原项目基础上新增了智能查找布局文件，优化了展示界面，增加了 **I18N** 国际化支持等功能。<br/>
+同时也编写了多个可以在 idea plugin 项目中重用的 utils 方法。<br/>
 在此也向原项目作者表示感谢。
 
 ## 演示
@@ -20,7 +20,7 @@
 - `Activity` `setContentView(R.layout.xxx)` 方法布局文件参数
 - `Fragment`(包括 support_v4 fragment) 中 `onCreateView` 方法中 `inflate(R.layout.xxx...` 布局参数
 - `RecyclerViewAdapter` 中 `onCreateViewHolder` 方法中 `inflate(R.layout.xxx...` 布局参数
-- 弹输入框提示手动输入<br>
+- 弹输入框提示手动输入<br/>
 
 来逐一尝试获取目标布局文件名，优先级从高到低，一旦有一个方法获取到了有效的布局文件名，
 就会展示对应布局文件的所有拥有 id 的 View 控件，然后可以选择生成对应的 `findViewById` 和 `onClick` 点击事件代码。
