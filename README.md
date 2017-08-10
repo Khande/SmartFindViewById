@@ -6,7 +6,7 @@
 在此也向原项目作者表示感谢。
 
 ## 演示
-![演示]()
+![演示](https://github.com/Khande/SmartFindViewById/raw/release/SmartFindViewById.gif)
 
 ## 安装
 - 方法 1. 首先下载该项目中的 `SmartFindViewById.jar` 包，然后打开 Android Studio `Preferences` 菜单中的 `Plugins`，点击 `Install plugin from disk...`
