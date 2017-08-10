@@ -1,0 +1,79 @@
+<!--
+  ~ Copyright 2017 Khande
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<idea-plugin>
+    <id>com.khande.idea.plugin.SmartFindViewById</id>
+    <name>SmartFindViewById</name>
+    <version>1.2</version>
+    <vendor email="komisha@163.com" url="https://github.com/Khande/SmartFindViewById">SmartFindViewById</vendor>
+
+    <description><![CDATA[
+        This plugin is used for generating <code>findViewById</code> & <code>onClick</code> code automatically in Android develop.<br/>
+        As you need to findViewById, you must provide a target Android layout file name, then this plugin will attempt to find the Android layout file in
+        the following ways by order smartly:
+        <ol>
+        <li>User select the layout file name for himself, e.g., user select the <strong>activity_main</strong> in code
+        <code>setContentView（R.layout.activity_main)</code> </li>
+        <li>the line where the caret positioning</li>
+        <li>If the current class file is an <code>Activity</code> subclass, the <code>setContentView(R.layout.<layout-file-name>)</code> will be checked</li>
+        <li>If the current class file is an <code>Fragment</code> subclass, the <code>inflate(R.layout.<layout-file-name>)</code> will be checked</li>
+        <li>If the current class file is an <code>RecyclerView.Adapter</code> subclass, the <code>inflate(R.layout.<layout-file-name>)</code> will be checked</li>
+        <li>popup an edit dialog to ask user to input the layout file name</li>
+        </ol>
+        Once the layout file is found, this plugin will show a dialog to display the detail of the view in the layout file name and it can
+        ignore(uncheck) the findViewById code already exist. You can also check or uncheck to decide which view code to generate.<br/>
+        Besides, this plugin support to detect the include layout file and use a rootView to findViewById.<br/>
+    （该插件可以依次通过
+    <ol>
+    <li>选中布局文件名，如选中代码段 setContentView（R.layout.activity_main) 中的 activity_main</li>
+    <li>检测当前光标所在行是否包含布局文件名（通过 R.layout. 前缀判断）</li>
+    <li>Activity setContentView(R.layout.xxx) 方法布局文件参数</li>
+    <li>Fragment(包括 support_v4 fragment) 中 onCreateView 方法中 inflate(R.layout.xxx... 布局参数</li>
+    <li>RecyclerViewAdapter 中 onCreateViewHolder 方法中 inflate(R.layout.xxx... 布局参数</li>
+    <li>弹输入框提示手动输入</li>
+    </ol>
+    来逐一尝试获取目标布局文件名，优先级从高到低，一旦有一个方法获取到了有效的布局文件名，
+    就会展示对应布局文件的所有拥有 id 的 View 控件，然后可以选择生成对应的 findViewById 和 onClick 点击事件代码。<br/>
+    目前还支持展示和生成 include 布局下的 View 控件和支持 rootView.findViewById.<br/>）
+    ]]></description>
+
+    <change-notes>Initial release of the plugin. （首次发布，多多指教！）</change-notes>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+    <idea-version since-build="141.0"/>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <!-- uncomment to enable plugin in all products-->
+    <depends>com.intellij.modules.lang</depends>
+
+    <!--http://www.jetbrains.org/intellij/sdk/docs/basics/plugin_structure/plugin_extensions_and_extension_points.html-->
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+        <action id="SmartFindViewByIdAction" class="action.SmartFindViewByIdAction" text="SmartFindViewById"
+                description="SmartFindViewByIdAction">
+            <add-to-group group-id="CodeMenu" anchor="last"/>
+            <add-to-group group-id="GenerateGroup" anchor="first"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt S"/>
+        </action>
+    </actions>
+
+</idea-plugin>
