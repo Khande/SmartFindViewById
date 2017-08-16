@@ -109,7 +109,7 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
         optionsGbc.gridx = 0;
         optionsGbc.gridy = 2;
         optionsGbc.weightx = 0;
-        optionsGbc.weighty = 1;
+        optionsGbc.weighty = 0;
         contentPane.add(optionsPanel, optionsGbc);
 
 
@@ -282,8 +282,13 @@ public class FindViewByIdDialog extends JDialog implements ActionListener {
 
 
     public void showDialog() {
+        setResizable(true);
+        setMinimumSize(new Dimension(800, 50));
+        // 自适应大小
         pack();
+        // 设置居中，放在setSize后面
         setLocationRelativeTo(null);
+        // 显示最前
         setAlwaysOnTop(true);
         setVisible(true);
     }
