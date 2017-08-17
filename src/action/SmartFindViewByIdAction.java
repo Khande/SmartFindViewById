@@ -20,8 +20,11 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.xml.XmlFile;
 import entity.ViewWidgetElement;
@@ -54,12 +57,16 @@ public class SmartFindViewByIdAction extends AnAction {
             return;
         }
 
+        VirtualFile currentFile = e.getData(PlatformDataKeys.VIRTUAL_FILE);
+        if (currentFile == null) {
+            return;
+        }
+
         PsiClass psiClass = PlatformUtils.getPsiClassInEditor(editor);
         if (psiClass == null) {
             Logger.error(StringResourceBundle.getStringByKey("caret_not_in_class"));
             return;
         }
-
 
         String layoutFileName = AndroidUtils.tryGetLayoutFileNameAutomatically(editor);
 
@@ -76,7 +83,14 @@ public class SmartFindViewByIdAction extends AnAction {
 
         layoutFileName = StringUtils.removeBlanksInString(layoutFileName);
 
-        XmlFile layoutXmlFile = AndroidUtils.getXmlFileByName(project, layoutFileName);
+        XmlFile layoutXmlFile;
+        Module module = ModuleUtil.findModuleForFile(currentFile, project);
+        if (module == null) {
+            layoutXmlFile = AndroidUtils.getXmlFileByName(project, layoutFileName);
+        } else {
+            layoutXmlFile = AndroidUtils.getXmlFileByNameInModule(module, layoutFileName);
+        }
+
         if (layoutXmlFile == null) {
             String errorLayoutFileNotExistFormat = StringResourceBundle.getStringByKey("error_layout_file_not_exist");
             String fileNotExistError = String.format(errorLayoutFileNotExistFormat, layoutFileName);

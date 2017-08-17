@@ -18,11 +18,16 @@ package utils;
 
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.SelectionModel;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.search.EverythingGlobalScope;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.SearchScope;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
@@ -30,6 +35,7 @@ import entity.ViewWidgetElement;
 import org.apache.http.util.TextUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import sun.rmi.runtime.Log;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -146,15 +152,32 @@ public final class AndroidUtils {
         return parts[1];
     }
 
+    @Nullable
+    public static PsiFile getFileByNameInModule(@NotNull final Module module, @NotNull final String fileName) {
+        Project project = module.getProject();
+        return getFileByNameWithinSearchScope(project, fileName, GlobalSearchScope.moduleScope(module));
+    }
 
     @Nullable
     public static PsiFile getFileByName(@NotNull Project project, @NotNull String fileName) {
-        PsiFile[] psiFiles = FilenameIndex.getFilesByName(project, fileName, GlobalSearchScope.allScope(project));
-        if (psiFiles.length > 0) {
-            return psiFiles[0];
+        return getFileByNameWithinSearchScope(project, fileName, GlobalSearchScope.allScope(project));
+    }
+
+    @Nullable
+    public static PsiFile getFileByNameWithinSearchScope(@NotNull final Project project, @NotNull final String fileName,
+                                                          @NotNull final GlobalSearchScope searchScope) {
+        PsiFile[] filesByName = FilenameIndex.getFilesByName(project, fileName, searchScope);
+        if (filesByName.length > 0) {
+            return filesByName[0];
         } else {
             return null;
         }
+    }
+
+    @Nullable
+    public static XmlFile getXmlFileByNameInModule(@NotNull Module module, @NotNull String fileName) {
+        String xmlFileName = fileName + XML_FILE_SUFFIX;
+        return (XmlFile) getFileByNameInModule(module, xmlFileName);
     }
 
     @Nullable
@@ -373,7 +396,19 @@ public final class AndroidUtils {
                 return "";
             }
             String layoutFileName = StringUtils.removeBlanksInString(selectedText);
-            XmlFile xmlFile = getXmlFileByName(project, layoutFileName);
+
+            VirtualFile currentFile = FileDocumentManager.getInstance().getFile(editor.getDocument());
+            if (currentFile == null) {
+                return "";
+            }
+
+            XmlFile xmlFile;
+            Module module = ModuleUtil.findModuleForFile(currentFile, project);
+            if (module == null) {
+                xmlFile = getXmlFileByName(project, layoutFileName);
+            } else {
+                xmlFile = getXmlFileByNameInModule(module, layoutFileName);
+            }
             if (xmlFile != null) {
                 return layoutFileName;
             } else {
