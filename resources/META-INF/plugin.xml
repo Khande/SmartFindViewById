@@ -17,7 +17,7 @@
 <idea-plugin>
     <id>com.khande.idea.plugin.SmartFindViewById</id>
     <name>SmartFindViewById</name>
-    <version>1.2</version>
+    <version>1.2.1</version>
     <vendor email="komisha@163.com" url="https://github.com/Khande/SmartFindViewById">SmartFindViewById</vendor>
 
     <description><![CDATA[
@@ -50,7 +50,20 @@
     目前还支持展示和生成 include 布局下的 View 控件和支持 rootView.findViewById.<br/>）
     ]]></description>
 
-    <change-notes>Initial release of the plugin. （首次发布，多多指教！）</change-notes>
+    <change-notes>
+        <![CDATA[
+        <h3>Version 1.2.1</h3>
+        <ul>
+            <li>Optimize the plugin's UI when the number of Android view ids is very small or large.</li>
+            <li>Prefer to find the Android layout file in current module to avoid the conflict from the layout file with the same name int other module.</li>
+        </ul>
+
+        <h3>Version 1.2</h3>
+        <ul>
+            <li>Initial release of the plugin. （首次发布，多多指教！）</li>
+        </ul>
+        ]]>
+    </change-notes>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
     <idea-version since-build="141.0"/>
