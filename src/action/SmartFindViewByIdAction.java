@@ -26,6 +26,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiMethod;
 import com.intellij.psi.xml.XmlFile;
 import entity.ViewWidgetElement;
 import org.apache.http.util.TextUtils;
@@ -69,6 +70,11 @@ public class SmartFindViewByIdAction extends AnAction {
         }
 
         String layoutFileName = AndroidUtils.tryGetLayoutFileNameAutomatically(editor);
+
+        PsiMethod nearbyMethodAtCaretLocation = PlatformUtils.getNearbyMethodAtCaretLocation(editor);
+        if (nearbyMethodAtCaretLocation != null) {
+            Logger.info(nearbyMethodAtCaretLocation.getName());
+        }
 
         if (layoutFileName.isEmpty()) {
             layoutFileName = Messages.showInputDialog(project, StringResourceBundle.getStringByKey("msg_input_layout_file_name"),

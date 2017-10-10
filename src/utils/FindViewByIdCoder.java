@@ -160,7 +160,14 @@ public class FindViewByIdCoder extends Simple {
             }
 
             initMethodStringBuilder.append("\n}\n");
-            mClass.add(mElementFactory.createMethodFromText(initMethodStringBuilder.toString(), mClass));
+            PsiMethod methodFromText = mElementFactory.createMethodFromText(initMethodStringBuilder.toString(), mClass);
+
+            PsiMethod nearbyMethodAtCaretLocation = PlatformUtils.getNearbyMethodAtCaretLocation(mEditor);
+            if (nearbyMethodAtCaretLocation != null) {
+                mClass.addAfter(methodFromText, nearbyMethodAtCaretLocation);
+            } else {
+                mClass.add(methodFromText);
+            }
         }
     }
 

@@ -25,6 +25,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.PsiUtil;
 import com.intellij.psi.util.PsiUtilBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -125,12 +126,12 @@ public final class PlatformUtils {
             return false;
         }
 
-        for (int i = 0; i < params.length; i++) {
-            isInvoked = isInvoked && statementText.contains(params[i]);
-            if (!isInvoked) {
+        for (String param : params) {
+            if (!statementText.contains(param)) {
                 return false;
             }
         }
+
         return true;
     }
 
@@ -164,7 +165,7 @@ public final class PlatformUtils {
      * @return 当前光标所在行的文本
      */
     @NotNull
-    static String getCaretLineText(@NotNull Editor editor) {
+    public static String getCaretLineText(@NotNull Editor editor) {
         Document document = editor.getDocument();
         CaretModel caretModel = editor.getCaretModel();
         int caretModelOffset = caretModel.getOffset();
@@ -175,4 +176,32 @@ public final class PlatformUtils {
 
         return document.getText(new TextRange(lineStartOffset, lineEndOffset));
     }
+
+
+    @Nullable
+    public static PsiMethod getMethodAtCaretLocation(@NotNull Editor editor) {
+        PsiElement element = PsiUtilBase.getElementAtCaret(editor);
+        return PsiTreeUtil.getParentOfType(element, PsiMethod.class);
+    }
+
+    @Nullable
+    public static PsiMethod getPrevMethodAtCaretLocation(@NotNull Editor editor) {
+        PsiElement element = PsiUtilBase.getElementAtCaret(editor);
+        return PsiTreeUtil.getPrevSiblingOfType(element, PsiMethod.class);
+    }
+
+    @Nullable
+    public static PsiMethod getNearbyMethodAtCaretLocation(@NotNull Editor editor) {
+        PsiElement element = PsiUtilBase.getElementAtCaret(editor);
+        PsiMethod method = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
+        if (method == null) {
+            method = PsiTreeUtil.getPrevSiblingOfType(element, PsiMethod.class);
+            if (method == null) {
+                method = PsiTreeUtil.getNextSiblingOfType(element, PsiMethod.class);
+            }
+        }
+        return method;
+    }
+
+
 }
