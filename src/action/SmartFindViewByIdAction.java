@@ -86,8 +86,10 @@ public class SmartFindViewByIdAction extends AnAction {
         XmlFile layoutXmlFile;
         Module module = ModuleUtil.findModuleForFile(currentFile, project);
         if (module == null) {
+            Logger.info("module is null, search layout file " + layoutFileName + " in all project" + project.getName());
             layoutXmlFile = AndroidUtils.getXmlFileByName(project, layoutFileName);
         } else {
+            Logger.info("search layout file " + layoutFileName + " in module " + module.getName());
             layoutXmlFile = AndroidUtils.getXmlFileByNameInModule(module, layoutFileName);
         }
 

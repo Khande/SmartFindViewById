@@ -129,7 +129,7 @@ public class ViewWidgetElement {
     }
 
     private void setGenerateOnClickMethod(final boolean clickable, @NotNull final String viewName) {
-        isGenerateOnClickMethod = clickable || viewName.contains("Button");
+        isGenerateOnClickMethod = clickable || (viewName.contains("Button") && !viewName.contains("Radio"));
     }
 
     public void setGenerateOnClickMethod(boolean generateOnClickMethod) {

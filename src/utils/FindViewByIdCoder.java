@@ -206,22 +206,41 @@ public class FindViewByIdCoder extends Simple {
                     PsiCodeBlock psiSwitchStatementBody = psiSwitchStatement.getBody();
                     if (psiSwitchStatementBody != null) {
                         PsiStatement[] psiSwitchStatements = psiSwitchStatementBody.getStatements();
+
+                        PsiStatement switchDefaultStatement = null;
+                        for (PsiStatement statement : psiSwitchStatements) {
+                            if (statement instanceof PsiSwitchLabelStatement && statement.getText().contains("default")) {
+                                switchDefaultStatement = statement;
+                                break;
+                            }
+                        }
+
                         for (ViewWidgetElement element : mGenerateOnClickElementList) {
                             boolean isCaseExist = false;
                             for (PsiStatement statement : psiSwitchStatements) {
-                                if (statement.getText().contains(element.getFullViewId())) {
+                                if (statement instanceof PsiSwitchLabelStatement && statement.getText().contains(element.getFullViewId())) {
                                     isCaseExist = true;
                                     break;
                                 }
                             }
                             if (!isCaseExist) {
-                                StringBuilder switchCaseBuilder = new StringBuilder("case ");
-                                switchCaseBuilder.append(element.getFullViewId());
-                                switchCaseBuilder.append(":\n");
-                                switchCaseBuilder.append("\t\t\t\t//TODO \n");
-                                switchCaseBuilder.append("break;\n");
-                                psiSwitchStatementBody.add(
-                                        mElementFactory.createStatementFromText(switchCaseBuilder.toString(), psiSwitchStatementBody));
+                                String caseStatementText = "case " + element.getFullViewId() + ":";
+                                PsiStatement caseStatement = mElementFactory.createStatementFromText(caseStatementText, psiSwitchStatementBody);
+                                PsiComment todoComment = mElementFactory
+                                        .createCommentFromText("// TODO " + DateUtils.getTodoCommentDate(), psiSwitchStatementBody);
+
+                                PsiStatement breakStatement = mElementFactory.createStatementFromText("break;", psiSwitchStatementBody);
+
+                                if (switchDefaultStatement == null) {
+                                    psiSwitchStatementBody.add(caseStatement);
+                                    psiSwitchStatementBody.add(todoComment);
+                                    psiSwitchStatementBody.add(breakStatement);
+                                } else {
+                                    psiSwitchStatementBody.addBefore(caseStatement, switchDefaultStatement);
+                                    psiSwitchStatementBody.addBefore(todoComment, switchDefaultStatement);
+                                    psiSwitchStatementBody.addBefore(breakStatement, switchDefaultStatement);
+                                }
+
                             }
 
                         }
@@ -234,10 +253,8 @@ public class FindViewByIdCoder extends Simple {
             onClickMethodBuilder.append("@Override\n public void onClick(View v) {\n");
             onClickMethodBuilder.append("switch (v.getId()) {\n");
             for (ViewWidgetElement element : mGenerateOnClickElementList) {
-                onClickMethodBuilder.append("case ");
-                onClickMethodBuilder.append(element.getFullViewId());
-                onClickMethodBuilder.append(":\n");
-                onClickMethodBuilder.append("\t\t\t\t//TODO \n");
+                onClickMethodBuilder.append("case ").append(element.getFullViewId()).append(":\n");
+                onClickMethodBuilder.append("\t\t\t\t// TODO ").append(DateUtils.getTodoCommentDate()).append("\n");
                 onClickMethodBuilder.append("break;\n");
             }
             onClickMethodBuilder.append("default:\n");
