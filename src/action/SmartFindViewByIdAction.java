@@ -46,7 +46,7 @@ public class SmartFindViewByIdAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-        Logger.init(StringResourceBundle.getStringByKey("plugin_name"), Logger.DEBUG);
+        Logger.init(StringResourceBundle.getStringByKey("plugin_name"), Logger.ERROR);
 
         final Project project = e.getProject();
         if (project == null) {

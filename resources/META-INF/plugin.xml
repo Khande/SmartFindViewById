@@ -17,8 +17,8 @@
 <idea-plugin>
     <id>com.khande.idea.plugin.SmartFindViewById</id>
     <name>SmartFindViewById</name>
-    <version>1.2.1</version>
-    <vendor email="komisha@163.com" url="https://github.com/Khande/SmartFindViewById">SmartFindViewById</vendor>
+    <version>1.2.2</version>
+    <vendor email="komisha@163.com" url="https://github.com/Khande/SmartFindViewById">Khande</vendor>
 
     <description><![CDATA[
         This plugin is used for generating <code>findViewById</code> & <code>onClick</code> code automatically in Android develop.<br/>
@@ -52,6 +52,13 @@
 
     <change-notes>
         <![CDATA[
+        <h3>Version 1.2.2</h3>
+        <ul>
+            <li>Fix a bug when adding new switch statement to existed onClick method.</li>
+            <li>Add TODO comment in onClick method; Make Android RadioButton do not generate onClick by default.</li>
+            <li>Generate the findViewById code near the opened editor's caret.</li>
+        </ul>
+
         <h3>Version 1.2.1</h3>
         <ul>
             <li>Optimize the plugin's UI when the number of Android view ids is very small or large.</li>
